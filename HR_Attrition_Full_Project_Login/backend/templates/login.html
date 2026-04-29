@@ -4,277 +4,350 @@
     <meta charset="UTF-8">
     <title>HR Attrition Prediction - Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- FontAwesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-    <!-- Particles JS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: #0f2027;
-    overflow: hidden;
-}
-
-#particles-js {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-}
-
-.login-wrapper {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.login-card {
-    width: 400px;
-    padding: 40px;
-    border-radius: 20px;
-    backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    animation: fadeIn 1s ease;
-    transition: 0.3s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(40px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Shake Effect */
-.login-card.shake {
-    animation: shake 0.4s;
-}
-
-@keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
-}
-
-.logo-circle {
-    width: 70px;
-    height: 70px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: auto;
-    margin-bottom: 15px;
-    font-size: 28px;
-    color: #2575fc;
-}
-
-.title, .subtitle {
-    color: white;
-}
-
-.input-group-custom {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.input-group-custom i {
-    position: absolute;
-    top: 50%;
-    left: 15px;
-    transform: translateY(-50%);
-    color: #aaa;
-}
-
-.input-group-custom input {
-    width: 100%;
-    padding: 12px 40px;
-    border-radius: 10px;
-    border: none;
-    outline: none;
-    background: rgba(255,255,255,0.2);
-    color: white;
-}
-
-.input-group-custom input:focus {
-    box-shadow: 0 0 15px #2575fc;
-}
-
-.toggle-password {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #ccc;
-}
-
-.btn-login {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background: linear-gradient(45deg, #2575fc, #6a11cb);
-    color: white;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.btn-login:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-
-/* Theme Toggle */
-.theme-toggle {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    cursor: pointer;
-    color: white;
-    font-size: 20px;
-}
-
-/* Light Mode */
-body.light-mode {
-    background: #f4f6f9;
-}
-
-body.light-mode .login-card {
-    background: rgba(255,255,255,0.9);
-}
-
-body.light-mode .title,
-body.light-mode .subtitle {
-    color: #333;
-}
-
-body.light-mode .input-group-custom input {
-    background: #eee;
-    color: #333;
-}
-
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            overflow: hidden;
         }
+
+        #particles-js {
+            position: fixed;
+            width: 100%; height: 100%;
+            z-index: 0;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            width: 420px;
+            padding: 45px 40px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            animation: slideUp 0.7s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .login-card.shake {
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%      { transform: translateX(-12px); }
+            40%      { transform: translateX(12px); }
+            60%      { transform: translateX(-8px); }
+            80%      { transform: translateX(8px); }
+        }
+
+        .logo-circle {
+            width: 75px; height: 75px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 18px;
+            font-size: 30px; color: white;
+            box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+            animation: pulse-glow 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%,100% { box-shadow: 0 8px 25px rgba(102,126,234,0.5); }
+            50%      { box-shadow: 0 8px 40px rgba(102,126,234,0.9); }
+        }
+
+        .login-title { color: #fff; font-size: 1.6rem; font-weight: 700; text-align: center; }
+        .login-subtitle { color: rgba(255,255,255,0.6); font-size: 0.85rem; text-align: center; margin-bottom: 28px; }
+
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .input-group-custom .icon {
+            position: absolute; left: 15px; top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.5);
+            font-size: 14px; z-index: 2;
+            transition: color 0.3s;
+        }
+
+        .input-group-custom input {
+            width: 100%;
+            padding: 13px 42px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group-custom input::placeholder { color: rgba(255,255,255,0.4); }
+
+        .input-group-custom input:focus {
+            border-color: #667eea;
+            background: rgba(102,126,234,0.15);
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+
+        .input-group-custom input:focus + .icon,
+        .input-group-custom:focus-within .icon { color: #667eea; }
+
+        .toggle-password {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer; color: rgba(255,255,255,0.4);
+            font-size: 14px; transition: color 0.3s;
+        }
+        .toggle-password:hover { color: #667eea; }
+
+        .remember-row {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 22px;
+        }
+        .remember-row input[type="checkbox"] { accent-color: #667eea; width: 16px; height: 16px; }
+        .remember-row label { color: rgba(255,255,255,0.7); font-size: 0.85rem; cursor: pointer; }
+
+        .btn-login {
+            width: 100%; padding: 13px;
+            border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem; cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-login:hover::before { left: 100%; }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(102,126,234,0.5); }
+        .btn-login:active { transform: translateY(0); }
+
+        .theme-toggle {
+            position: fixed; top: 20px; right: 20px;
+            z-index: 100; cursor: pointer;
+            width: 42px; height: 42px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 16px;
+            transition: all 0.3s;
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,0.2); transform: rotate(20deg); }
+
+        .credentials-hint {
+            margin-top: 20px;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .credentials-hint p { color: rgba(255,255,255,0.5); font-size: 0.75rem; margin: 0 0 6px; }
+        .cred-item { display: flex; justify-content: space-between; }
+        .cred-item span { color: rgba(255,255,255,0.7); font-size: 0.78rem; }
+        .cred-item .badge-role {
+            font-size: 0.68rem; padding: 2px 8px;
+            border-radius: 20px; font-weight: 600;
+        }
+        .badge-admin { background: rgba(220,53,69,0.3); color: #ff6b7a; border: 1px solid rgba(220,53,69,0.4); }
+        .badge-user  { background: rgba(102,126,234,0.3); color: #a0b4ff; border: 1px solid rgba(102,126,234,0.4); }
+
+        /* Light mode */
+        body.light-mode {
+            background: linear-gradient(135deg, #e8eaf6, #c5cae9, #e3f2fd);
+        }
+        body.light-mode .login-card {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.08);
+        }
+        body.light-mode .login-title { color: #1a1a2e; }
+        body.light-mode .login-subtitle { color: #666; }
+        body.light-mode .input-group-custom input {
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.12);
+            color: #333;
+        }
+        body.light-mode .input-group-custom input::placeholder { color: #999; }
+        body.light-mode .input-group-custom .icon { color: #999; }
+        body.light-mode .remember-row label { color: #555; }
+        body.light-mode .credentials-hint { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }
+        body.light-mode .credentials-hint p { color: #888; }
+        body.light-mode .cred-item span { color: #555; }
+        body.light-mode .theme-toggle { color: #333; background: rgba(0,0,0,0.08); border-color: rgba(0,0,0,0.12); }
+
+        .alert { border-radius: 10px; font-size: 0.88rem; border: none; }
+        .alert-danger  { background: rgba(220,53,69,0.2);  color: #ff8a95; border: 1px solid rgba(220,53,69,0.3); }
+        .alert-success { background: rgba(40,167,69,0.2);  color: #6fcf97; border: 1px solid rgba(40,167,69,0.3); }
+        .alert-info    { background: rgba(23,162,184,0.2); color: #7dd3e0; border: 1px solid rgba(23,162,184,0.3); }
     </style>
 </head>
-
 <body>
 
 <div id="particles-js"></div>
 
-<!-- Dark/Light Toggle -->
-<div class="theme-toggle" onclick="toggleTheme()">
-    <i class="fas fa-moon"></i>
+<div class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+    <i class="fas fa-moon" id="themeIcon"></i>
 </div>
 
 <div class="login-wrapper">
     <div class="login-card" id="loginCard">
 
-        <div class="text-center mb-4">
-            <div class="logo-circle">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <h2 class="title">HR Attrition Prediction</h2>
-            <p class="subtitle">Enterprise Analytics Platform</p>
+        <div class="logo-circle">
+            <i class="fas fa-chart-line"></i>
         </div>
+        <h2 class="login-title">HR Attrition AI</h2>
+        <p class="login-subtitle">Enterprise Analytics Platform</p>
 
-        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show mb-3" role="alert">
+                        <i class="fas fa-{{ 'times-circle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }} me-2"></i>
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <form method="POST" onsubmit="showLoader()">
-
+        <form method="POST" id="loginForm" onsubmit="showLoader()">
             <div class="input-group-custom">
-                <i class="fas fa-user"></i>
-                <input type="text" name="username" placeholder="Username" required>
+                <i class="fas fa-user icon"></i>
+                <input type="text" name="username" id="username" placeholder="Username" required autocomplete="username">
             </div>
 
             <div class="input-group-custom">
-                <i class="fas fa-lock"></i>
-                <input type="password" id="password" name="password" placeholder="Password" required>
+                <i class="fas fa-lock icon"></i>
+                <input type="password" id="password" name="password" placeholder="Password" required autocomplete="current-password">
                 <span class="toggle-password" onclick="togglePassword()">
-                    <i class="fas fa-eye"></i>
+                    <i class="fas fa-eye" id="eyeIcon"></i>
                 </span>
             </div>
 
-            <div class="form-check text-start mb-3 text-light">
-                <input class="form-check-input" type="checkbox" name="remember">
-                <label class="form-check-label">
-                    Remember Me
-                </label>
+            <div class="remember-row">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember">Remember Me</label>
             </div>
 
             <button type="submit" class="btn-login" id="loginBtn">
-                <span id="btnText">
-                    <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                <span id="btnText"><i class="fas fa-sign-in-alt me-2"></i>Sign In</span>
+                <span id="loader" class="d-none">
+                    <span class="spinner-border spinner-border-sm me-2"></span>Authenticating...
                 </span>
-                <span id="loader" class="spinner-border spinner-border-sm d-none"></span>
             </button>
-
         </form>
+
+        <div class="credentials-hint">
+            <p><i class="fas fa-key me-1"></i> Demo Credentials</p>
+            <div class="cred-item mb-1">
+                <span>admin / admin123</span>
+                <span class="badge-role badge-admin">Admin</span>
+            </div>
+            <div class="cred-item">
+                <span>user / user123</span>
+                <span class="badge-role badge-user">User</span>
+            </div>
+        </div>
 
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-/* Password Toggle */
 function togglePassword() {
-    const password = document.getElementById("password");
-    const icon = document.querySelector(".toggle-password i");
-
-    if (password.type === "password") {
-        password.type = "text";
-        icon.classList.replace("fa-eye", "fa-eye-slash");
+    const pwd = document.getElementById('password');
+    const icon = document.getElementById('eyeIcon');
+    if (pwd.type === 'password') {
+        pwd.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
     } else {
-        password.type = "password";
-        icon.classList.replace("fa-eye-slash", "fa-eye");
+        pwd.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
     }
 }
 
-/* Loading Animation */
 function showLoader() {
-    document.getElementById("btnText").classList.add("d-none");
-    document.getElementById("loader").classList.remove("d-none");
+    document.getElementById('btnText').classList.add('d-none');
+    document.getElementById('loader').classList.remove('d-none');
+    document.getElementById('loginBtn').disabled = true;
 }
 
-/* Theme Toggle */
 function toggleTheme() {
-    document.body.classList.toggle("light-mode");
-    const icon = document.querySelector(".theme-toggle i");
-    icon.classList.toggle("fa-moon");
-    icon.classList.toggle("fa-sun");
+    document.body.classList.toggle('light-mode');
+    const icon = document.getElementById('themeIcon');
+    icon.classList.toggle('fa-moon');
+    icon.classList.toggle('fa-sun');
+    localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
 }
 
-/* Particles */
-particlesJS("particles-js", {
+// Restore theme
+if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+    document.getElementById('themeIcon').classList.replace('fa-moon', 'fa-sun');
+}
+
+// Shake on error flash
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+{% if category == 'error' %}
+document.getElementById('loginCard').classList.add('shake');
+setTimeout(() => document.getElementById('loginCard').classList.remove('shake'), 600);
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+particlesJS('particles-js', {
     particles: {
-        number: { value: 60 },
-        size: { value: 3 },
-        move: { speed: 2 },
-        line_linked: { enable: true },
-        color: { value: "#ffffff" }
+        number: { value: 70, density: { enable: true, value_area: 800 } },
+        color: { value: ['#667eea', '#764ba2', '#ffffff'] },
+        shape: { type: 'circle' },
+        opacity: { value: 0.5, random: true, anim: { enable: true, speed: 1, opacity_min: 0.1 } },
+        size: { value: 3, random: true },
+        line_linked: { enable: true, distance: 150, color: '#667eea', opacity: 0.3, width: 1 },
+        move: { enable: true, speed: 1.5, direction: 'none', random: true, out_mode: 'out' }
+    },
+    interactivity: {
+        detect_on: 'canvas',
+        events: { onhover: { enable: true, mode: 'grab' }, onclick: { enable: true, mode: 'push' } },
+        modes: { grab: { distance: 140, line_linked: { opacity: 0.6 } }, push: { particles_nb: 3 } }
     }
 });
 </script>
-
 </body>
 </html>
