@@ -463,6 +463,7 @@ def logout():
     flash(f'Goodbye {username}!', 'info')
     return redirect(url_for('login'))
 
+load_model()  # Load on startup for gunicorn too
+
 if __name__ == '__main__':
-    load_model()  # Try to load existing model
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
