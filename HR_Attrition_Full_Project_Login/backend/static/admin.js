@@ -1,253 +1,132 @@
-// Admin Dashboard JavaScript
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize sidebar navigation
-    initializeSidebar();
-    
-    // Initialize upload form
-    initializeUploadForm();
-    
-    // Show dashboard section by default
-    showSection('dashboard');
+document.addEventListener('DOMContentLoaded', function () {
+    initUploadForm();
+    initDragDrop();
 });
 
-function initializeSidebar() {
-    const sidebarLinks = document.querySelectorAll('.sidebar .nav-link[data-section]');
-    
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove active class from all links
-            sidebarLinks.forEach(l => l.classList.remove('active'));
-            
-            // Add active class to clicked link
-            this.classList.add('active');
-            
-            // Show corresponding section
-            const section = this.getAttribute('data-section');
-            showSection(section);
-        });
-    });
-}
+// ===== UPLOAD FORM =====
+function initUploadForm() {
+    const form = document.getElementById('uploadForm');
+    if (!form) return;
 
-function showSection(sectionName) {
-    // Hide all sections
-    const sections = document.querySelectorAll('.content-section');
-    sections.forEach(section => {
-        section.style.display = 'none';
-    });
-    
-    // Show selected section
-    const targetSection = document.getElementById(`${sectionName}-section`);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-        targetSection.classList.add('fade-in-up');
-    }
-}
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const file = document.getElementById('excelFile').files[0];
+        if (!file) { showToast('Please select an Excel file', 'danger'); return; }
+        if (!file.name.toLowerCase().endsWith('.xlsx')) { showToast('Only .xlsx files allowed', 'danger'); return; }
 
-function initializeUploadForm() {
-    const uploadForm = document.getElementById('uploadForm');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const uploadProgress = document.getElementById('uploadProgress');
-    const uploadResult = document.getElementById('uploadResult');
+        const btn = document.getElementById('uploadBtn');
+        const progress = document.getElementById('uploadProgress');
+        const result = document.getElementById('uploadResult');
 
-    if (uploadForm) {
-        uploadForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const fileInput = document.getElementById('excelFile');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showAlert('Please select an Excel file', 'danger');
-                return;
-            }
-            
-            if (!file.name.toLowerCase().endsWith('.xlsx')) {
-                showAlert('Please select a valid .xlsx file', 'danger');
-                return;
-            }
-            
-            // Show progress
-            uploadBtn.disabled = true;
-            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading & Training...';
-            uploadProgress.style.display = 'block';
-            uploadResult.style.display = 'none';
-            
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok && result.success) {
-                    // Success
-                    uploadResult.innerHTML = `
-                        <div class="alert alert-success fade-in-up">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>Success!</strong> ${result.message}
-                            <br><strong>Model Accuracy:</strong> ${(result.accuracy * 100).toFixed(1)}%
-                            <div class="progress mt-2">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: ${(result.accuracy * 100).toFixed(1)}%">
-                                    ${(result.accuracy * 100).toFixed(1)}%
-                                </div>
-                            </div>
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading & Training...';
+        progress.style.display = 'block';
+        result.style.display = 'none';
+
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            const res = await fetch('/upload', { method: 'POST', body: fd });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                result.innerHTML = `
+                    <div class="alert alert-success fade-in-up">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Success!</strong> ${data.message}
+                        <div class="progress mt-2" style="height:8px;">
+                            <div class="progress-bar bg-success" style="width:${(data.accuracy * 100).toFixed(1)}%"></div>
                         </div>
-                    `;
-                    
-                    // Refresh page after 3 seconds
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 3000);
-                    
-                } else {
-                    // Error
-                    uploadResult.innerHTML = `
-                        <div class="alert alert-danger fade-in-up">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Error:</strong> ${result.message || 'Training failed'}
-                        </div>
-                    `;
-                }
-                
-            } catch (error) {
-                uploadResult.innerHTML = `
-                    <div class="alert alert-danger fade-in-up">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Network Error:</strong> ${error.message}
-                    </div>
-                `;
-            } finally {
-                // Reset UI
-                uploadBtn.disabled = false;
-                uploadBtn.innerHTML = '<i class="fas fa-upload me-2"></i>Upload File';
-                uploadProgress.style.display = 'none';
-                uploadResult.style.display = 'block';
+                        <small class="text-muted">Accuracy: ${(data.accuracy * 100).toFixed(1)}%</small>
+                    </div>`;
+                setTimeout(() => window.location.reload(), 2500);
+            } else {
+                result.innerHTML = `<div class="alert alert-danger fade-in-up"><i class="fas fa-times-circle me-2"></i>${data.message || 'Upload failed'}</div>`;
             }
-        });
-    }
-    
-    // File input change handler
+        } catch (err) {
+            result.innerHTML = `<div class="alert alert-danger fade-in-up"><i class="fas fa-times-circle me-2"></i>Network error: ${err.message}</div>`;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-upload me-2"></i>Upload & Train Model';
+            progress.style.display = 'none';
+            result.style.display = 'block';
+        }
+    });
+
+    // File input change
     const fileInput = document.getElementById('excelFile');
     if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
             if (file) {
-                const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
-                console.log(`Selected file: ${file.name} (${fileSize} MB)`);
-                
-                // Show file info
-                const fileInfo = document.createElement('div');
-                fileInfo.className = 'alert alert-info mt-2 fade-in-up';
-                fileInfo.innerHTML = `
-                    <i class="fas fa-file-excel me-2"></i>
-                    <strong>Selected:</strong> ${file.name} (${fileSize} MB)
-                `;
-                
-                // Remove existing file info
-                const existingInfo = document.querySelector('.alert-info');
-                if (existingInfo && existingInfo.innerHTML.includes('Selected:')) {
-                    existingInfo.remove();
+                const display = document.getElementById('fileNameDisplay');
+                if (display) {
+                    display.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                    display.style.display = 'block';
                 }
-                
-                // Add new file info
-                fileInput.parentNode.appendChild(fileInfo);
             }
         });
     }
 }
 
-// Utility functions
-function showAlert(message, type) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show fade-in-up`;
-    alertDiv.innerHTML = `
-        <i class="fas fa-${type === 'danger' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    // Insert at top of main content
-    const mainContent = document.querySelector('main .pt-3');
-    mainContent.insertBefore(alertDiv, mainContent.firstChild);
-    
-    // Auto dismiss after 5 seconds
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
+// ===== DRAG & DROP =====
+function initDragDrop() {
+    const zone = document.getElementById('uploadZone');
+    const input = document.getElementById('excelFile');
+    if (!zone || !input) return;
+
+    ['dragenter', 'dragover'].forEach(e => {
+        zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.add('dragover'); });
+    });
+
+    ['dragleave', 'drop'].forEach(e => {
+        zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.remove('dragover'); });
+    });
+
+    zone.addEventListener('drop', function (e) {
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith('.xlsx')) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            const display = document.getElementById('fileNameDisplay');
+            if (display) {
+                display.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                display.style.display = 'block';
+            }
+        } else {
+            showToast('Only .xlsx files allowed', 'danger');
         }
-    }, 5000);
+    });
+}
+
+// ===== UTILITIES =====
+function showToast(msg, type = 'info') {
+    const t = document.createElement('div');
+    t.className = `alert alert-${type} fade-in-up`;
+    t.style.cssText = 'position:fixed;top:80px;right:20px;z-index:9999;min-width:280px;box-shadow:0 8px 25px rgba(0,0,0,0.15);';
+    t.innerHTML = `<i class="fas fa-${type === 'danger' ? 'times-circle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
 }
 
 function refreshModelInfo() {
     fetch('/model/info')
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            if (data.error) {
-                showAlert(data.error, 'warning');
-            } else {
-                showAlert(`Model Info - Accuracy: ${(data.accuracy * 100).toFixed(1)}%, Features: ${data.feature_count}`, 'info');
-            }
+            if (data.error) { showToast(data.error, 'warning'); }
+            else { showToast(`Accuracy: ${(data.accuracy * 100).toFixed(1)}% | Features: ${data.feature_count}`, 'success'); }
         })
-        .catch(error => {
-            showAlert('Failed to fetch model info', 'danger');
-        });
+        .catch(() => showToast('Failed to fetch model info', 'danger'));
 }
 
 function retrainModel() {
-    if (confirm('Are you sure you want to retrain the model? This will replace the current model.')) {
-        showAlert('Please upload a new Excel file to retrain the model.', 'info');
+    if (confirm('Retrain model with new data? This will replace the current model.')) {
         showSection('upload');
-        
-        // Highlight upload section
-        const uploadSection = document.querySelector('.sidebar .nav-link[data-section="upload"]');
-        if (uploadSection) {
-            uploadSection.classList.add('active');
-            document.querySelector('.sidebar .nav-link[data-section="model"]').classList.remove('active');
-        }
+        showToast('Upload a new Excel file to retrain the model', 'info');
     }
 }
 
-function viewUserDetails(username) {
-    showAlert(`User Details: ${username} - This feature can be extended to show detailed user information.`, 'info');
-}
-
-// Add smooth scrolling for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// Add loading animation to buttons
-document.querySelectorAll('.btn').forEach(button => {
-    button.addEventListener('click', function() {
-        if (!this.disabled && !this.classList.contains('btn-close')) {
-            this.classList.add('loading-pulse');
-            setTimeout(() => {
-                this.classList.remove('loading-pulse');
-            }, 1000);
-        }
-    });
-});
-
-// Initialize tooltips if Bootstrap is available
-if (typeof bootstrap !== 'undefined') {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+function viewUserDetails(username, role) {
+    // handled inline in template
 }
