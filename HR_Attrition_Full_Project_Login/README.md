@@ -1,42 +1,46 @@
 # 🧠 HR Attrition AI — Employee Attrition Prediction System
 
-![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python)
-![Flask](https://img.shields.io/badge/Flask-3.1.2-black?style=for-the-badge&logo=flask)
-![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.8.0-orange?style=for-the-badge&logo=scikit-learn)
-![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple?style=for-the-badge&logo=bootstrap)
+<div align="center">
 
-> An AI-powered HR Analytics platform that predicts employee attrition using Machine Learning (Random Forest Classifier). Built with Flask, featuring a modern dark/light theme UI with glassmorphism design.
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.1.2-000000?style=for-the-badge&logo=flask&logoColor=white)
+![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.8.0-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+![Chart.js](https://img.shields.io/badge/Chart.js-4.4-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
+
+**An AI-powered HR Analytics platform that predicts employee attrition using Machine Learning.**  
+Built with Flask + Random Forest Classifier + Modern Dark/Light UI.
+
+</div>
 
 ---
 
-## 🚀 Live Demo
+## 📌 Table of Contents
 
-> Deploy on Render → [See Deployment Guide](#-deployment-on-render)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Screenshots](#-screenshots)
+- [Local Setup](#-local-setup)
+- [Login Credentials](#-login-credentials)
+- [How to Use](#-how-to-use)
+- [Excel Format](#-excel-file-format)
+- [Deploy on Render](#-deploy-on-render)
 
 ---
 
 ## ✨ Features
 
-- 🔐 **Role-based Login** — Admin & User roles
-- 📊 **Admin Dashboard** — Upload dataset, train ML model, manage users
-- 🤖 **ML Model** — Random Forest Classifier with accuracy display
-- 🔮 **Prediction Tool** — Predict employee attrition risk in real-time
-- 📈 **Analytics Reports** — Interactive Bar, Line, Pie, Doughnut charts
-- 🌙 **Dark / Light Theme** — Toggle across all pages, saved in localStorage
-- 📁 **Excel Upload** — Drag & drop .xlsx dataset upload
-- 🎨 **Modern UI** — Glassmorphism, animations, gradient cards
-
----
-
-## 🖼️ Screenshots
-
-| Login Page | Admin Dashboard |
+| Feature | Description |
 |---|---|
-| Dark glassmorphism login with particles | Stat cards, quick actions, sidebar |
-
-| Prediction Tool | Analytics Reports |
-|---|---|
-| Dynamic form with AI result | Interactive charts with dark theme |
+| 🔐 Role-based Login | Admin & User roles with session management |
+| 📊 Admin Dashboard | Upload dataset, train ML model, manage users |
+| 🤖 ML Model | Random Forest Classifier with live accuracy display |
+| 🔮 Prediction Tool | Real-time employee attrition risk prediction |
+| 📈 Analytics Reports | Interactive Bar, Line, Pie, Doughnut charts |
+| 🌙 Dark / Light Theme | Toggle on all pages, saved in localStorage |
+| 📁 Excel Upload | Drag & drop .xlsx dataset upload with auto-training |
+| 🎨 Modern UI | Glassmorphism, particles, gradient cards, animations |
 
 ---
 
@@ -44,15 +48,15 @@
 
 | Layer | Technology |
 |---|---|
-| Backend | Python, Flask |
-| ML Model | Scikit-Learn (Random Forest) |
-| Data Processing | Pandas, NumPy |
-| Frontend | HTML5, CSS3, Bootstrap 5.3 |
-| Charts | Chart.js 4.4 |
-| Icons | Font Awesome 6.4 |
-| Fonts | Google Fonts (Poppins) |
-| Animations | Particles.js, CSS Keyframes |
-| Deployment | Render (Gunicorn) |
+| **Backend** | Python 3.12, Flask 3.1.2 |
+| **ML Model** | Scikit-Learn — Random Forest Classifier |
+| **Data Processing** | Pandas, NumPy |
+| **Frontend** | HTML5, CSS3, Bootstrap 5.3 |
+| **Charts** | Chart.js 4.4 |
+| **Animations** | Particles.js, CSS Keyframes |
+| **Icons** | Font Awesome 6.4 |
+| **Fonts** | Google Fonts — Poppins |
+| **Deployment** | Render (Gunicorn) |
 
 ---
 
@@ -60,25 +64,57 @@
 
 ```
 HR_Attrition_Full_Project_Login/
+│
 ├── backend/
 │   ├── static/
-│   │   ├── style.css        # Global dark/light theme CSS
-│   │   ├── admin.js         # Admin dashboard JS
-│   │   └── user.js          # Prediction form JS
+│   │   ├── style.css            # Global dark/light theme CSS
+│   │   ├── admin.js             # Admin dashboard JS (upload, drag-drop)
+│   │   └── user.js              # Prediction form JS (validate, result)
+│   │
 │   ├── templates/
-│   │   ├── login.html       # Login page with particles
-│   │   ├── admin_dashboard.html  # Admin panel
-│   │   ├── user_dashboard.html   # Prediction tool
-│   │   └── admin_reports.html    # Analytics charts
-│   ├── uploads/             # Uploaded Excel files
-│   ├── app.py               # Flask application
-│   ├── model.pkl            # Trained ML model
-│   └── Procfile             # Gunicorn start command
-├── requirements.txt
-├── render.yaml
+│   │   ├── login.html           # Login page with particles + theme toggle
+│   │   ├── admin_dashboard.html # Admin panel (stats, upload, model, users)
+│   │   ├── user_dashboard.html  # Prediction tool with AI result
+│   │   └── admin_reports.html   # Analytics charts page
+│   │
+│   ├── uploads/                 # Uploaded Excel files (auto-created)
+│   ├── app.py                   # Flask application (routes + ML logic)
+│   ├── model.pkl                # Trained ML model (auto-generated)
+│   └── Procfile                 # Gunicorn start command for Render
+│
+├── requirements.txt             # Python dependencies
+├── render.yaml                  # Render deployment config
 ├── .gitignore
 └── README.md
 ```
+
+---
+
+## 🖼️ Screenshots
+
+### 🔐 Login Page
+- Dark glassmorphism card with animated particles
+- 🌙 Dark / ☀️ Light theme toggle
+- Password show/hide toggle
+- Shake animation on wrong credentials
+
+### 📊 Admin Dashboard
+- 4 animated stat cards (Model Status, Accuracy, Features, Users)
+- Sidebar navigation with active state
+- Drag & drop Excel upload with live training progress
+- User management table with role badges
+
+### 🔮 Prediction Tool
+- Dynamic form based on trained model features
+- AI prediction result with probability ring
+- Color-coded result (🔴 Leave / 🟢 Stay)
+- Actionable recommendations
+
+### 📈 Analytics Reports
+- Bar, Line, Pie, Doughnut chart types
+- Dynamic column selection from dataset
+- Multiple charts on same page
+- Dark-themed Chart.js with custom colors
 
 ---
 
@@ -112,54 +148,70 @@ http://localhost:5000
 
 | Username | Password | Role |
 |---|---|---|
-| admin | admin123 | Admin |
-| user | user123 | User |
-| manager | manager123 | User |
-| hr_lead | hr123 | User |
+| `admin` | `admin123` | Admin |
+| `user` | `user123` | User |
+| `manager` | `manager123` | User |
+| `hr_lead` | `hr123` | User |
 
 ---
 
-## 📊 How to Use
+## 📖 How to Use
 
-### Admin Flow
-1. Login as **admin / admin123**
-2. Go to **Upload Dataset** → Upload `.xlsx` file
-3. Model trains automatically
-4. View accuracy in **Model Info**
-5. Check **Analytics Reports** for charts
+### 👨‍💼 Admin Flow
+```
+1. Login → admin / admin123
+2. Upload Dataset → drag & drop .xlsx file
+3. Model trains automatically → view accuracy
+4. Analytics Reports → generate charts
+5. Manage Users → view all system users
+```
 
-### User Flow
-1. Login as **user / user123**
-2. Fill in employee details in the form
-3. Click **Predict Attrition Risk**
-4. View AI prediction with recommendations
-
-### Excel File Format
-Your `.xlsx` file must contain:
-- `Attrition` — Yes/No *(required)*
-- `Department` — Sales, Research & Development, Human Resources *(required)*
-- `JobRole` — Role name *(required)*
-- `Age`, `MonthlyIncome`, `YearsAtCompany` etc. *(optional)*
+### 👤 User Flow
+```
+1. Login → user / user123
+2. Fill employee details in the form
+3. Click "Predict Attrition Risk"
+4. View AI prediction + probability + recommendations
+```
 
 ---
 
-## 🌐 Deployment on Render
+## 📊 Excel File Format
+
+Your `.xlsx` file must contain these columns:
+
+| Column | Type | Required |
+|---|---|---|
+| `Attrition` | Yes / No | ✅ Required |
+| `Department` | Sales / Research & Development / Human Resources | ✅ Required |
+| `JobRole` | Sales Executive / Research Scientist / etc. | ✅ Required |
+| `Age` | Number (18–70) | Optional |
+| `MonthlyIncome` | Number | Optional |
+| `YearsAtCompany` | Number | Optional |
+| `JobSatisfaction` | 1–5 | Optional |
+| `OverTime` | Yes / No | Optional |
+
+> Any additional numeric or categorical columns are automatically processed.
+
+---
+
+## 🌐 Deploy on Render
 
 ### Step 1 — Push to GitHub
 ```bash
 git init
 git add .
-git commit -m "Initial commit"
+git commit -m "Initial commit — HR Attrition AI"
 git branch -M main
 git remote add origin https://github.com/YOUR_USERNAME/hr-attrition-ai.git
 git push -u origin main
 ```
 
 ### Step 2 — Deploy on Render
-1. Go to [render.com](https://render.com) → Login with GitHub
+1. Go to **[render.com](https://render.com)** → Login with GitHub
 2. Click **New → Web Service**
 3. Select your repository
-4. Set these settings:
+4. Configure settings:
 
 | Setting | Value |
 |---|---|
@@ -169,27 +221,49 @@ git push -u origin main
 | Start Command | `gunicorn app:app` |
 
 5. Click **Create Web Service**
-6. Your app will be live at `https://hr-attrition-ai.onrender.com`
+6. Live URL: `https://hr-attrition-ai.onrender.com`
 
-> ⚠️ After deploy, login as admin and re-upload the Excel file to retrain the model (`.pkl` files don't persist on Render free tier).
+> ⚠️ **Note:** After deploy, login as admin and re-upload the Excel file to retrain the model. `.pkl` files don't persist on Render free tier restarts.
 
 ---
 
-## 🎨 Theme
+## 🎨 Theme System
 
-- **Dark Mode** — Default dark purple glassmorphism
-- **Light Mode** — Clean white/light purple
-- Toggle button available in navbar on all pages
-- Theme preference saved in `localStorage`
+| Mode | Description |
+|---|---|
+| 🌙 Dark Mode | Default — dark purple glassmorphism |
+| ☀️ Light Mode | Clean white / light purple |
+
+- Toggle button available in **navbar on all pages**
+- Theme preference saved in **localStorage** (persists on reload)
+- Smooth CSS transition between modes
+
+---
+
+## 📦 Dependencies
+
+```txt
+Flask==3.1.2
+scikit-learn==1.8.0
+pandas==3.0.0
+numpy==2.4.2
+openpyxl==3.1.2
+Werkzeug==3.1.3
+gunicorn==21.2.0
+```
 
 ---
 
 ## 📄 License
 
-This project is for educational purposes.
+This project is built for **educational purposes**.
 
 ---
 
-## 👨‍💻 Author
+<div align="center">
 
-Made with ❤️ using Flask + Scikit-Learn + Bootstrap 5
+Made with ❤️ using **Flask** + **Scikit-Learn** + **Bootstrap 5**
+
+⭐ Star this repo if you found it helpful!
+
+</div>
