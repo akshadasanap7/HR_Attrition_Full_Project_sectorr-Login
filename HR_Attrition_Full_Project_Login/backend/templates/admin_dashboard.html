@@ -368,8 +368,10 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>User</th>
+                                        <th>Name</th>
+                                        <th>Username</th>
                                         <th>Role</th>
+                                        <th>Department</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -380,18 +382,26 @@
                                         <td style="color:rgba(255,255,255,0.3);">{{ loop.index }}</td>
                                         <td>
                                             <div class="d-flex align-items-center gap-2">
-                                                <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,{% if user.role == 'Admin' %}#eb3349,#f45c43{% else %}#667eea,#764ba2{% endif %});display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.78rem;flex-shrink:0;">
-                                                    <i class="fas fa-{{ 'user-shield' if user.role == 'Admin' else 'user' }}"></i>
+                                                <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,{% if user.role == 'Admin' %}#eb3349,#f45c43{% elif user.role == 'Manager' %}#f7971e,#ffd200{% elif user.role == 'HR Lead' %}#11998e,#38ef7d{% else %}#667eea,#764ba2{% endif %});display:flex;align-items:center;justify-content:center;color:{% if user.role in ['Manager','HR Lead'] %}#1a1a2e{% else %}#fff{% endif %};font-size:0.75rem;flex-shrink:0;font-weight:700;">
+                                                    {{ user.name[0] }}
                                                 </div>
-                                                <strong style="font-size:0.88rem;">{{ user.username }}</strong>
+                                                <strong style="font-size:0.85rem;">{{ user.name }}</strong>
                                             </div>
                                         </td>
+                                        <td style="font-size:0.82rem;color:rgba(255,255,255,0.5);">{{ user.username }}</td>
                                         <td>
-                                            <span class="badge {% if user.role == 'Admin' %}bg-danger{% else %}bg-primary{% endif %}">{{ user.role }}</span>
+                                            <span class="badge" style="font-size:0.7rem;padding:4px 10px;border-radius:20px;
+                                                {% if user.role == 'Admin' %}background:linear-gradient(135deg,#eb3349,#f45c43);
+                                                {% elif user.role == 'Manager' %}background:linear-gradient(135deg,#f7971e,#ffd200);color:#1a1a2e;
+                                                {% elif user.role == 'HR Lead' %}background:linear-gradient(135deg,#11998e,#38ef7d);color:#1a1a2e;
+                                                {% else %}background:linear-gradient(135deg,#667eea,#764ba2);{% endif %}">
+                                                {{ user.role }}
+                                            </span>
                                         </td>
+                                        <td style="font-size:0.82rem;color:rgba(255,255,255,0.5);">{{ user.dept }}</td>
                                         <td><span class="badge bg-success">● Active</span></td>
                                         <td>
-                                            <button class="btn btn-sm btn-outline-secondary" onclick="viewUserDetails('{{ user.username }}','{{ user.role }}')">
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="viewUserDetails('{{ user.username }}','{{ user.role }}','{{ user.name }}','{{ user.dept }}')">
                                                 <i class="fas fa-eye me-1"></i>View
                                             </button>
                                         </td>
@@ -440,19 +450,23 @@ document.querySelectorAll('.sidebar .nav-link[data-section]').forEach(link => {
     });
 });
 
-function viewUserDetails(username, role) {
-    const color = role === 'Admin' ? '#eb3349,#f45c43' : '#667eea,#764ba2';
+function viewUserDetails(username, role, name, dept) {
+    const color = role === 'Admin' ? '#eb3349,#f45c43' : role === 'Manager' ? '#f7971e,#ffd200' : role === 'HR Lead' ? '#11998e,#38ef7d' : '#667eea,#764ba2';
+    const textColor = ['Manager','HR Lead'].includes(role) ? '#1a1a2e' : '#fff';
+    const icon = role === 'Admin' ? 'user-shield' : role === 'Manager' ? 'user-tie' : role === 'HR Lead' ? 'user-nurse' : 'user';
     document.getElementById('userModalBody').innerHTML = `
         <div class="text-center py-3">
-            <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,${color});display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.8rem;color:#fff;">
-                <i class="fas fa-${role==='Admin'?'user-shield':'user'}"></i>
+            <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,${color});display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.8rem;color:${textColor};">
+                <i class="fas fa-${icon}"></i>
             </div>
-            <h5 class="mb-1">${username}</h5>
-            <span class="badge ${role==='Admin'?'bg-danger':'bg-primary'}">${role}</span>
+            <h5 class="mb-1">${name}</h5>
+            <span class="badge" style="background:linear-gradient(135deg,${color});color:${textColor};">${role}</span>
         </div>
         <hr style="border-color:rgba(255,255,255,0.08);">
+        <div class="d-flex justify-content-between py-2"><span style="color:rgba(255,255,255,0.5);">Full Name</span><strong>${name}</strong></div>
         <div class="d-flex justify-content-between py-2"><span style="color:rgba(255,255,255,0.5);">Username</span><strong>${username}</strong></div>
         <div class="d-flex justify-content-between py-2"><span style="color:rgba(255,255,255,0.5);">Role</span><strong>${role}</strong></div>
+        <div class="d-flex justify-content-between py-2"><span style="color:rgba(255,255,255,0.5);">Department</span><strong>${dept}</strong></div>
         <div class="d-flex justify-content-between py-2"><span style="color:rgba(255,255,255,0.5);">Status</span><span class="badge bg-success">Active</span></div>
     `;
     new bootstrap.Modal(document.getElementById('userModal')).show();
