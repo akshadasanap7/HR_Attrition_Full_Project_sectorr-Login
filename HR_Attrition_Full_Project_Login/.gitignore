@@ -1,12 +1,11 @@
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
 .env
 venv/
 env/
 .venv/
-*.pkl
 uploads/
-*.xlsx
+*.docx
 .DS_Store
+Thumbs.db

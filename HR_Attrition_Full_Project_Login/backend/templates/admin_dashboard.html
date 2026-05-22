@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - HR Attrition AI</title>
+    <title>Admin Dashboard — HR Attrition AI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,18 +15,26 @@
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
-            <i class="fas fa-brain me-2"></i>HR Attrition AI
+            <div class="brand-icon"><i class="fas fa-brain"></i></div>
+            HR Attrition AI
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
             <div class="d-flex align-items-center gap-3">
-                <span class="text-white-50 d-flex align-items-center" style="font-size:0.85rem;">
-                    <i class="fas fa-user-shield me-2 text-white"></i>
-                    <span class="text-white fw-semibold">{{ username }}</span>
-                    <span class="badge ms-2" style="background:rgba(102,126,234,0.3);color:#a0b4ff;font-size:0.7rem;">Admin</span>
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:32px;height:32px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:#fff;">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div>
+                        <div style="color:#fff;font-size:0.85rem;font-weight:600;line-height:1.2;">{{ username }}</div>
+                        <div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">Administrator</div>
+                    </div>
+                </div>
+                <button onclick="toggleTheme()" id="themeBtn" title="Toggle Theme" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.3s;flex-shrink:0;">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
                 <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">
                     <i class="fas fa-sign-out-alt me-1"></i>Logout
                 </a>
@@ -39,10 +47,8 @@
     <div class="row g-0">
 
         <!-- SIDEBAR -->
-        <nav class="col-md-3 col-lg-2 sidebar">
-            <div class="mb-3 px-2">
-                <small class="text-white-50 text-uppercase fw-bold" style="font-size:0.7rem;letter-spacing:1px;">Navigation</small>
-            </div>
+        <nav class="col-md-3 col-lg-2 sidebar d-none d-md-block">
+            <div class="sidebar-label mb-3">Main Menu</div>
             <ul class="nav flex-column">
                 <li class="nav-item">
                     <a class="nav-link active" href="#" data-section="dashboard">
@@ -51,17 +57,12 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-section="upload">
-                        <i class="fas fa-file-excel"></i>Upload Excel
+                        <i class="fas fa-file-excel"></i>Upload Dataset
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-section="model">
-                        <i class="fas fa-robot"></i>Train Model
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin_reports') }}">
-                        <i class="fas fa-chart-bar"></i>View Reports
+                        <i class="fas fa-robot"></i>Model Info
                     </a>
                 </li>
                 <li class="nav-item">
@@ -70,6 +71,12 @@
                     </a>
                 </li>
                 <hr class="sidebar-divider">
+                <div class="sidebar-label mb-2">Tools</div>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_reports') }}">
+                        <i class="fas fa-chart-bar"></i>Analytics Reports
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('user_dashboard') }}">
                         <i class="fas fa-magic"></i>Prediction Tool
@@ -78,14 +85,14 @@
             </ul>
         </nav>
 
-        <!-- MAIN CONTENT -->
+        <!-- MAIN -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-4 py-4">
 
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show fade-in-up" role="alert">
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show fade-in-up mb-4">
                             <i class="fas fa-{{ 'times-circle' if category == 'error' else 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' }} me-2"></i>
                             {{ message }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -94,23 +101,30 @@
                 {% endif %}
             {% endwith %}
 
-            <!-- ===== DASHBOARD SECTION ===== -->
+            <!-- ===== DASHBOARD ===== -->
             <div id="dashboard-section" class="content-section">
+
                 <div class="section-header">
                     <div class="header-icon"><i class="fas fa-tachometer-alt"></i></div>
-                    <h2>Dashboard Overview</h2>
+                    <div>
+                        <h2>Dashboard Overview</h2>
+                        <p style="color:rgba(255,255,255,0.4);font-size:0.8rem;margin:0;">Welcome back, {{ username }}</p>
+                    </div>
                 </div>
 
                 <!-- Stat Cards -->
                 <div class="row g-4 mb-4">
                     <div class="col-xl-3 col-md-6 fade-in-up delay-1">
-                        <div class="card stat-card stat-card-primary p-3">
+                        <div class="card stat-card stat-card-primary">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="stat-label">Model Status</div>
-                                    <div class="stat-value mt-1">
-                                        {% if model_exists %}<span style="font-size:1.1rem;">✅ Active</span>
-                                        {% else %}<span style="font-size:1.1rem;">⚠️ Untrained</span>{% endif %}
+                                    <div class="stat-value mt-1" style="font-size:1.2rem;">
+                                        {% if model_exists %}
+                                            <span style="color:#38ef7d;">● Active</span>
+                                        {% else %}
+                                            <span style="color:#ffd200;">● Untrained</span>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="stat-icon"><i class="fas fa-robot"></i></div>
@@ -118,11 +132,11 @@
                         </div>
                     </div>
                     <div class="col-xl-3 col-md-6 fade-in-up delay-2">
-                        <div class="card stat-card stat-card-success p-3">
+                        <div class="card stat-card stat-card-success">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <div class="stat-label">Model Accuracy</div>
-                                    <div class="stat-value mt-1" id="accuracyVal">
+                                    <div class="stat-label">Accuracy</div>
+                                    <div class="stat-value mt-1">
                                         {% if model_accuracy %}{{ "%.1f"|format(model_accuracy * 100) }}%{% else %}N/A{% endif %}
                                     </div>
                                 </div>
@@ -131,18 +145,18 @@
                         </div>
                     </div>
                     <div class="col-xl-3 col-md-6 fade-in-up delay-3">
-                        <div class="card stat-card stat-card-info p-3">
+                        <div class="card stat-card stat-card-info">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="stat-label">Features</div>
-                                    <div class="stat-value mt-1" id="featureVal">{{ feature_count }}</div>
+                                    <div class="stat-value mt-1">{{ feature_count }}</div>
                                 </div>
                                 <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
                             </div>
                         </div>
                     </div>
                     <div class="col-xl-3 col-md-6 fade-in-up delay-4">
-                        <div class="card stat-card stat-card-warning p-3">
+                        <div class="card stat-card stat-card-warning">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="stat-label">Total Users</div>
@@ -154,12 +168,12 @@
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
+                <!-- Quick Actions + System Info -->
                 <div class="row g-4">
                     <div class="col-md-6 fade-in-up delay-2">
                         <div class="card h-100">
-                            <div class="card-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;">
-                                <i class="fas fa-bolt me-2"></i>Quick Actions
+                            <div class="card-header">
+                                <i class="fas fa-bolt me-2" style="color:var(--warning2);"></i>Quick Actions
                             </div>
                             <div class="card-body d-flex flex-column gap-3">
                                 <button class="btn btn-primary w-100" onclick="showSection('upload')">
@@ -169,46 +183,43 @@
                                     <i class="fas fa-robot me-2"></i>View Model Info
                                 </button>
                                 <a href="{{ url_for('admin_reports') }}" class="btn btn-info w-100">
-                                    <i class="fas fa-chart-bar me-2"></i>Open Analytics Reports
+                                    <i class="fas fa-chart-bar me-2"></i>Analytics Reports
                                 </a>
                                 <a href="{{ url_for('user_dashboard') }}" class="btn btn-warning w-100">
-                                    <i class="fas fa-magic me-2"></i>Try Prediction Tool
+                                    <i class="fas fa-magic me-2"></i>Prediction Tool
                                 </a>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6 fade-in-up delay-3">
                         <div class="card h-100">
-                            <div class="card-header" style="background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;">
-                                <i class="fas fa-info-circle me-2"></i>System Info
+                            <div class="card-header">
+                                <i class="fas fa-info-circle me-2" style="color:var(--info);"></i>System Info
                             </div>
                             <div class="card-body">
-                                <ul class="list-unstyled mb-0">
-                                    <li class="d-flex justify-content-between py-2 border-bottom">
-                                        <span class="text-muted">Model Type</span>
-                                        <span class="fw-semibold">Random Forest</span>
-                                    </li>
-                                    <li class="d-flex justify-content-between py-2 border-bottom">
-                                        <span class="text-muted">Status</span>
-                                        <span class="badge {% if model_exists %}bg-success{% else %}bg-warning text-dark{% endif %}">
-                                            {% if model_exists %}Ready{% else %}Not Trained{% endif %}
-                                        </span>
-                                    </li>
-                                    <li class="d-flex justify-content-between py-2 border-bottom">
-                                        <span class="text-muted">Features Used</span>
-                                        <span class="fw-semibold">{{ feature_count }}</span>
-                                    </li>
-                                    <li class="d-flex justify-content-between py-2">
-                                        <span class="text-muted">Accuracy</span>
-                                        <span class="fw-semibold text-success">
-                                            {% if model_accuracy %}{{ "%.1f"|format(model_accuracy * 100) }}%{% else %}N/A{% endif %}
-                                        </span>
-                                    </li>
-                                </ul>
+                                <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                                    <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Model Type</span>
+                                    <span class="fw-semibold" style="font-size:0.85rem;">Random Forest</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                                    <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Status</span>
+                                    <span class="badge {% if model_exists %}bg-success{% else %}bg-warning{% endif %}">
+                                        {% if model_exists %}Ready{% else %}Not Trained{% endif %}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                                    <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Features</span>
+                                    <span class="fw-semibold" style="font-size:0.85rem;">{{ feature_count }} columns</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center py-2">
+                                    <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Accuracy</span>
+                                    <span class="fw-semibold" style="color:#38ef7d;font-size:0.85rem;">
+                                        {% if model_accuracy %}{{ "%.1f"|format(model_accuracy * 100) }}%{% else %}N/A{% endif %}
+                                    </span>
+                                </div>
                                 {% if model_accuracy %}
                                 <div class="mt-3">
-                                    <small class="text-muted">Accuracy</small>
-                                    <div class="progress mt-1">
+                                    <div class="progress">
                                         <div class="progress-bar bg-success" style="width:{{ "%.1f"|format(model_accuracy * 100) }}%"></div>
                                     </div>
                                 </div>
@@ -219,65 +230,54 @@
                 </div>
             </div>
 
-            <!-- ===== UPLOAD SECTION ===== -->
+            <!-- ===== UPLOAD ===== -->
             <div id="upload-section" class="content-section" style="display:none;">
                 <div class="section-header">
                     <div class="header-icon" style="background:linear-gradient(135deg,#11998e,#38ef7d);"><i class="fas fa-upload"></i></div>
-                    <h2>Upload Excel Dataset</h2>
+                    <h2>Upload Dataset</h2>
                 </div>
-
                 <div class="row g-4">
                     <div class="col-lg-7">
                         <div class="card">
-                            <div class="card-header" style="background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;">
-                                <i class="fas fa-file-excel me-2"></i>Upload & Train Model
-                            </div>
+                            <div class="card-header"><i class="fas fa-file-excel me-2" style="color:#38ef7d;"></i>Upload & Train Model</div>
                             <div class="card-body">
                                 <form id="uploadForm" enctype="multipart/form-data">
-                                    <div class="upload-zone mb-3" id="uploadZone" onclick="document.getElementById('excelFile').click()">
-                                        <i class="fas fa-cloud-upload-alt d-block"></i>
-                                        <h5 class="mt-2 mb-1">Drop your Excel file here</h5>
-                                        <p class="text-muted mb-0" style="font-size:0.85rem;">or click to browse — .xlsx files only</p>
-                                        <div id="fileNameDisplay" class="mt-2 text-primary fw-semibold" style="display:none;"></div>
+                                    <div class="upload-zone mb-4" id="uploadZone" onclick="document.getElementById('excelFile').click()">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <h5>Drop Excel file here</h5>
+                                        <p>or click to browse — .xlsx only</p>
+                                        <div id="fileNameDisplay" style="display:none;color:var(--primary);font-weight:600;font-size:0.85rem;margin-top:8px;"></div>
                                     </div>
                                     <input type="file" id="excelFile" name="file" accept=".xlsx" required style="display:none;">
-
                                     <button type="submit" class="btn btn-success btn-lg w-100" id="uploadBtn">
                                         <i class="fas fa-upload me-2"></i>Upload & Train Model
                                     </button>
                                 </form>
-
                                 <div id="uploadProgress" class="mt-3" style="display:none;">
                                     <div class="d-flex align-items-center gap-2 mb-2">
                                         <div class="spinner-border spinner-border-sm text-success"></div>
-                                        <span class="text-muted">Training model, please wait...</span>
+                                        <span style="color:rgba(255,255,255,0.6);font-size:0.85rem;">Training model, please wait...</span>
                                     </div>
-                                    <div class="progress">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%"></div>
-                                    </div>
+                                    <div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%"></div></div>
                                 </div>
-
                                 <div id="uploadResult" class="mt-3" style="display:none;"></div>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-5">
                         <div class="card h-100">
-                            <div class="card-header" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:#fff;">
-                                <i class="fas fa-lightbulb me-2"></i>Required Format
-                            </div>
+                            <div class="card-header"><i class="fas fa-lightbulb me-2" style="color:var(--warning2);"></i>Required Format</div>
                             <div class="card-body">
-                                <p class="text-muted mb-3" style="font-size:0.88rem;">Your Excel file must contain these columns:</p>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.83rem;margin-bottom:16px;">Your Excel file must contain:</p>
                                 <ul class="list-unstyled">
-                                    <li class="mb-2"><span class="badge bg-danger me-2">Required</span><strong>Attrition</strong> — Yes/No</li>
-                                    <li class="mb-2"><span class="badge bg-warning text-dark me-2">Required</span><strong>Department</strong> — Sales, R&D, HR</li>
-                                    <li class="mb-2"><span class="badge bg-warning text-dark me-2">Required</span><strong>JobRole</strong> — Role name</li>
-                                    <li class="mb-2"><span class="badge bg-info me-2">Optional</span><strong>Age, Income, Years...</strong></li>
-                                    <li class="mb-2"><span class="badge bg-info me-2">Optional</span><strong>Satisfaction ratings</strong></li>
+                                    <li class="mb-2"><span class="badge bg-danger me-2">Required</span><span style="font-size:0.85rem;"><strong>Attrition</strong> — Yes/No</span></li>
+                                    <li class="mb-2"><span class="badge bg-warning me-2">Required</span><span style="font-size:0.85rem;"><strong>Department</strong> — Sales, R&D, HR</span></li>
+                                    <li class="mb-2"><span class="badge bg-warning me-2">Required</span><span style="font-size:0.85rem;"><strong>JobRole</strong> — Role name</span></li>
+                                    <li class="mb-2"><span class="badge bg-info me-2">Optional</span><span style="font-size:0.85rem;">Age, Income, Years...</span></li>
+                                    <li><span class="badge bg-info me-2">Optional</span><span style="font-size:0.85rem;">Satisfaction ratings</span></li>
                                 </ul>
-                                <div class="alert alert-info mt-3 mb-0" style="font-size:0.82rem;">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Max file size: <strong>16 MB</strong>. Model trains automatically after upload.
+                                <div class="alert alert-info mt-3 mb-0" style="font-size:0.8rem;">
+                                    <i class="fas fa-info-circle me-1"></i>Max size: <strong>16 MB</strong>. Model trains automatically.
                                 </div>
                             </div>
                         </div>
@@ -285,39 +285,34 @@
                 </div>
             </div>
 
-            <!-- ===== MODEL SECTION ===== -->
+            <!-- ===== MODEL ===== -->
             <div id="model-section" class="content-section" style="display:none;">
                 <div class="section-header">
-                    <div class="header-icon" style="background:linear-gradient(135deg,#667eea,#764ba2);"><i class="fas fa-robot"></i></div>
-                    <h2>ML Model Management</h2>
+                    <div class="header-icon"><i class="fas fa-robot"></i></div>
+                    <h2>Model Management</h2>
                 </div>
-
                 {% if model_exists %}
                 <div class="row g-4">
                     <div class="col-md-6">
                         <div class="card">
-                            <div class="card-header" style="background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;">
-                                <i class="fas fa-check-circle me-2"></i>Model Status
-                            </div>
-                            <div class="card-body">
-                                <div class="text-center mb-4">
-                                    <div style="width:80px;height:80px;background:linear-gradient(135deg,#11998e,#38ef7d);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:2rem;color:#fff;">
-                                        <i class="fas fa-check"></i>
+                            <div class="card-header"><i class="fas fa-check-circle me-2" style="color:#38ef7d;"></i>Model Status</div>
+                            <div class="card-body text-center">
+                                <div style="width:80px;height:80px;background:linear-gradient(135deg,#11998e,#38ef7d);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;color:#fff;box-shadow:0 8px 25px rgba(17,153,142,0.4);">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <h5 style="color:#38ef7d;">Model is Active</h5>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Ready to make predictions</p>
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                                        <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Accuracy</span>
+                                        <span class="badge bg-success">{{ "%.1f"|format(model_accuracy * 100) }}%</span>
                                     </div>
-                                    <h5 class="text-success">Model is Active</h5>
-                                    <p class="text-muted mb-0">Ready to make predictions</p>
-                                </div>
-                                <div class="d-flex justify-content-between py-2 border-bottom">
-                                    <span class="text-muted">Accuracy</span>
-                                    <span class="badge bg-success fs-6">{{ "%.1f"|format(model_accuracy * 100) }}%</span>
-                                </div>
-                                <div class="d-flex justify-content-between py-2">
-                                    <span class="text-muted">Features</span>
-                                    <span class="fw-semibold">{{ feature_count }} columns</span>
-                                </div>
-                                <div class="progress mt-3">
-                                    <div class="progress-bar bg-success" style="width:{{ "%.1f"|format(model_accuracy * 100) }}%">
-                                        {{ "%.1f"|format(model_accuracy * 100) }}%
+                                    <div class="d-flex justify-content-between py-2">
+                                        <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Features</span>
+                                        <span style="font-size:0.85rem;font-weight:600;">{{ feature_count }} columns</span>
+                                    </div>
+                                    <div class="progress mt-2">
+                                        <div class="progress-bar bg-success" style="width:{{ "%.1f"|format(model_accuracy * 100) }}%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -325,9 +320,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="card h-100">
-                            <div class="card-header" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#fff;">
-                                <i class="fas fa-cogs me-2"></i>Actions
-                            </div>
+                            <div class="card-header"><i class="fas fa-cogs me-2" style="color:var(--warning2);"></i>Actions</div>
                             <div class="card-body d-flex flex-column gap-3">
                                 <button class="btn btn-warning" onclick="retrainModel()">
                                     <i class="fas fa-sync-alt me-2"></i>Retrain with New Data
@@ -348,8 +341,8 @@
                         <div style="width:80px;height:80px;background:linear-gradient(135deg,#f7971e,#ffd200);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;color:#fff;">
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
-                        <h4 class="text-warning">No Model Trained Yet</h4>
-                        <p class="text-muted mb-4">Upload an Excel dataset to train the prediction model.</p>
+                        <h4 style="color:#ffd200;">No Model Trained Yet</h4>
+                        <p style="color:rgba(255,255,255,0.5);">Upload an Excel dataset to train the prediction model.</p>
                         <button class="btn btn-primary btn-lg" onclick="showSection('upload')">
                             <i class="fas fa-upload me-2"></i>Upload Dataset Now
                         </button>
@@ -358,16 +351,16 @@
                 {% endif %}
             </div>
 
-            <!-- ===== USERS SECTION ===== -->
+            <!-- ===== USERS ===== -->
             <div id="users-section" class="content-section" style="display:none;">
                 <div class="section-header">
                     <div class="header-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe);"><i class="fas fa-users"></i></div>
                     <h2>User Management</h2>
                 </div>
-
                 <div class="card">
-                    <div class="card-header" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:#fff;">
-                        <i class="fas fa-user-cog me-2"></i>System Users ({{ users|length }} total)
+                    <div class="card-header">
+                        <i class="fas fa-user-cog me-2" style="color:var(--info);"></i>System Users
+                        <span class="badge bg-primary ms-2">{{ users|length }}</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -375,32 +368,30 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Username</th>
+                                        <th>User</th>
                                         <th>Role</th>
                                         <th>Status</th>
-                                        <th>Actions</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for user in users %}
-                                    <tr class="fade-in-up" style="animation-delay:{{ loop.index * 0.05 }}s">
-                                        <td class="text-muted">{{ loop.index }}</td>
+                                    <tr class="fade-in-up" style="animation-delay:{{ loop.index * 0.05 }}s;">
+                                        <td style="color:rgba(255,255,255,0.3);">{{ loop.index }}</td>
                                         <td>
                                             <div class="d-flex align-items-center gap-2">
-                                                <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,{% if user.role == 'Admin' %}#eb3349,#f45c43{% else %}#667eea,#764ba2{% endif %});display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.8rem;">
+                                                <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,{% if user.role == 'Admin' %}#eb3349,#f45c43{% else %}#667eea,#764ba2{% endif %});display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.78rem;flex-shrink:0;">
                                                     <i class="fas fa-{{ 'user-shield' if user.role == 'Admin' else 'user' }}"></i>
                                                 </div>
-                                                <strong>{{ user.username }}</strong>
+                                                <strong style="font-size:0.88rem;">{{ user.username }}</strong>
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge {% if user.role == 'Admin' %}bg-danger{% else %}bg-primary{% endif %}">
-                                                {{ user.role }}
-                                            </span>
+                                            <span class="badge {% if user.role == 'Admin' %}bg-danger{% else %}bg-primary{% endif %}">{{ user.role }}</span>
                                         </td>
                                         <td><span class="badge bg-success">● Active</span></td>
                                         <td>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="viewUserDetails('{{ user.username }}', '{{ user.role }}')">
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="viewUserDetails('{{ user.username }}','{{ user.role }}')">
                                                 <i class="fas fa-eye me-1"></i>View
                                             </button>
                                         </td>
@@ -417,12 +408,12 @@
     </div>
 </div>
 
-<!-- User Detail Modal -->
+<!-- User Modal -->
 <div class="modal fade" id="userModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:16px;border:none;">
-            <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:16px 16px 0 0;">
-                <h5 class="modal-title"><i class="fas fa-user me-2"></i>User Details</h5>
+        <div class="modal-content">
+            <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);">
+                <h5 class="modal-title text-white"><i class="fas fa-user me-2"></i>User Details</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="userModalBody"></div>
@@ -433,14 +424,13 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='admin.js') }}"></script>
 <script>
-// Section switching
 function showSection(name) {
     document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
     document.querySelectorAll('.sidebar .nav-link[data-section]').forEach(l => l.classList.remove('active'));
-    const target = document.getElementById(name + '-section');
-    if (target) { target.style.display = 'block'; }
-    const link = document.querySelector(`.sidebar .nav-link[data-section="${name}"]`);
-    if (link) link.classList.add('active');
+    const t = document.getElementById(name + '-section');
+    if (t) t.style.display = 'block';
+    const l = document.querySelector(`.sidebar .nav-link[data-section="${name}"]`);
+    if (l) l.classList.add('active');
 }
 
 document.querySelectorAll('.sidebar .nav-link[data-section]').forEach(link => {
@@ -451,24 +441,37 @@ document.querySelectorAll('.sidebar .nav-link[data-section]').forEach(link => {
 });
 
 function viewUserDetails(username, role) {
+    const color = role === 'Admin' ? '#eb3349,#f45c43' : '#667eea,#764ba2';
     document.getElementById('userModalBody').innerHTML = `
         <div class="text-center py-3">
-            <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,${role==='Admin'?'#eb3349,#f45c43':'#667eea,#764ba2'});display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.8rem;color:#fff;">
+            <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,${color});display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.8rem;color:#fff;">
                 <i class="fas fa-${role==='Admin'?'user-shield':'user'}"></i>
             </div>
             <h5 class="mb-1">${username}</h5>
             <span class="badge ${role==='Admin'?'bg-danger':'bg-primary'}">${role}</span>
         </div>
-        <hr>
-        <div class="d-flex justify-content-between py-2"><span class="text-muted">Username</span><strong>${username}</strong></div>
-        <div class="d-flex justify-content-between py-2"><span class="text-muted">Role</span><strong>${role}</strong></div>
-        <div class="d-flex justify-content-between py-2"><span class="text-muted">Status</span><span class="badge bg-success">Active</span></div>
+        <hr style="border-color:rgba(255,255,255,0.08);">
+        <div class="d-flex justify-content-between py-2"><span style="color:rgba(255,255,255,0.5);">Username</span><strong>${username}</strong></div>
+        <div class="d-flex justify-content-between py-2"><span style="color:rgba(255,255,255,0.5);">Role</span><strong>${role}</strong></div>
+        <div class="d-flex justify-content-between py-2"><span style="color:rgba(255,255,255,0.5);">Status</span><span class="badge bg-success">Active</span></div>
     `;
     new bootstrap.Modal(document.getElementById('userModal')).show();
 }
 
-// Show dashboard by default
 showSection('dashboard');
+
+// Theme Toggle
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    const icon = document.getElementById('themeIcon');
+    const isDark = !document.body.classList.contains('light-mode');
+    icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+    document.getElementById('themeIcon').className = 'fas fa-sun';
+}
 </script>
 </body>
 </html>
