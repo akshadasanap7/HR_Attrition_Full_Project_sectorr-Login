@@ -8,6 +8,149 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* ── Field Groups ── */
+        .form-section-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--primary);
+            margin: 20px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(102,126,234,0.2);
+        }
+
+        /* ── Field Card ── */
+        .field-card {
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1.5px solid rgba(255,255,255,0.07);
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .field-card:focus-within {
+            border-color: var(--primary);
+            background: rgba(102,126,234,0.08);
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        .field-card label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .field-card .form-control,
+        .field-card .form-select {
+            border: none !important;
+            padding: 2px 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: transparent !important;
+            box-shadow: none !important;
+            color: #fff !important;
+        }
+        .field-card .form-control::placeholder { color: rgba(255,255,255,0.25) !important; }
+
+        /* ── Predict Button ── */
+        .predict-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 14px;
+            padding: 15px 52px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        .predict-btn::before {
+            content: '';
+            position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.5s;
+        }
+        .predict-btn:hover::before { left: 100%; }
+        .predict-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 35px rgba(102,126,234,0.55); }
+        .predict-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* ── Result ── */
+        .result-leave { border-left: 4px solid #eb3349 !important; background: rgba(235,51,73,0.05) !important; }
+        .result-stay  { border-left: 4px solid #11998e !important; background: rgba(17,153,142,0.05) !important; }
+
+        .prob-ring {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            margin: 0 auto;
+            font-weight: 800; color: #fff;
+        }
+        .prob-ring-leave { background: linear-gradient(135deg,#eb3349,#f45c43); box-shadow: 0 8px 30px rgba(235,51,73,0.45); }
+        .prob-ring-stay  { background: linear-gradient(135deg,#11998e,#38ef7d); box-shadow: 0 8px 30px rgba(17,153,142,0.45); }
+
+        .rec-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.82rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .rec-item:last-child { border-bottom: none; }
+        .rec-icon {
+            width: 26px; height: 26px;
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 0.72rem;
+        }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-pill {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.6);
+        }
+        .stat-pill i { font-size: 0.75rem; }
+
+        /* Light mode overrides */
+        body.light-mode .field-card { background: #f8f9ff; border-color: #e2e8f0; }
+        body.light-mode .field-card:focus-within { background: rgba(102,126,234,0.05); border-color: #667eea; }
+        body.light-mode .field-card label { color: #718096; }
+        body.light-mode .field-card .form-control,
+        body.light-mode .field-card .form-select { color: #2d3748 !important; }
+        body.light-mode .field-card .form-control::placeholder { color: #a0aec0 !important; }
+        body.light-mode .form-section-label { color: #667eea; }
+        body.light-mode .stat-pill { background: #fff; border-color: rgba(102,126,234,0.15); color: #718096; }
+        body.light-mode .rec-item { color: #4a5568; border-bottom-color: #f0f2ff; }
+        body.light-mode .result-leave { background: #fff5f5 !important; }
+        body.light-mode .result-stay  { background: #f0fff4 !important; }
+    </style>
 </head>
 <body>
 
@@ -19,12 +162,12 @@
             HR Attrition AI
         </a>
         <div class="d-flex align-items-center gap-3">
-            <div class="d-flex align-items-center gap-2 d-none d-md-flex">
-                <div style="width:32px;height:32px;background:linear-gradient(135deg,#11998e,#38ef7d);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:#fff;">
+            <div class="d-none d-md-flex align-items-center gap-2">
+                <div style="width:32px;height:32px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:#fff;">
                     <i class="fas fa-user"></i>
                 </div>
                 <div>
-                    <div style="color:#fff;font-size:0.85rem;font-weight:600;line-height:1.2;">{{ username }}</div>
+                    <div style="color:#fff;font-size:0.85rem;font-weight:600;line-height:1.2;">{{ name if name else username }}</div>
                     <div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">User</div>
                 </div>
             </div>
@@ -47,7 +190,7 @@
             </div>
             <div>
                 <h1>Employee Attrition Predictor</h1>
-                <p>Fill in employee details to predict attrition risk using AI</p>
+                <p>Fill in employee details below to get an AI-powered attrition risk prediction</p>
             </div>
         </div>
     </div>
@@ -56,15 +199,13 @@
 <div class="container-fluid px-4 pb-5">
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show fade-in-up mb-4">
-                    <i class="fas fa-{{ 'times-circle' if category == 'error' else 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' }} me-2"></i>
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
+        {% if messages %}{% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show fade-in-up mb-4">
+                <i class="fas fa-{{ 'times-circle' if category == 'error' else 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' }} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}{% endif %}
     {% endwith %}
 
     {% if not model_exists %}
@@ -80,18 +221,32 @@
     </div>
 
     {% else %}
+
+    <!-- Stats Pills -->
+    <div class="stats-bar fade-in-up">
+        <div class="stat-pill"><i class="fas fa-robot" style="color:var(--primary);"></i>Random Forest Model</div>
+        <div class="stat-pill"><i class="fas fa-layer-group" style="color:var(--info);"></i>{{ features|length }} Features</div>
+        <div class="stat-pill"><i class="fas fa-bolt" style="color:var(--warning2);"></i>Real-time Prediction</div>
+        <div class="stat-pill"><i class="fas fa-shield-alt" style="color:#38ef7d;"></i>AI Powered</div>
+    </div>
+
     <div class="row g-4">
 
-        <!-- FORM -->
+        <!-- ── FORM ── -->
         <div class="col-lg-8">
             <div class="card fade-in-up">
-                <div class="card-header">
-                    <i class="fas fa-clipboard-list me-2" style="color:var(--primary);"></i>Employee Information
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-clipboard-list me-2" style="color:var(--primary);"></i>Employee Information Form</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearForm()">
+                        <i class="fas fa-eraser me-1"></i>Clear
+                    </button>
                 </div>
                 <div class="card-body p-4">
                     <form id="predictionForm">
-                        <div class="row g-3">
 
+                        <!-- Basic Info -->
+                        <div class="form-section-label"><i class="fas fa-id-card me-1"></i>Basic Information</div>
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="field-card">
                                     <label><i class="fas fa-building me-1"></i>Department</label>
@@ -103,7 +258,6 @@
                                     </select>
                                 </div>
                             </div>
-
                             <div class="col-md-6">
                                 <div class="field-card">
                                     <label><i class="fas fa-briefcase me-1"></i>Job Role</label>
@@ -115,132 +269,166 @@
                                     </select>
                                 </div>
                             </div>
-
-                            {% if features %}
-                                {% for feature in features %}
-                                    {% if feature not in ['Department', 'JobRole'] %}
-                                    <div class="col-md-6">
-                                        <div class="field-card">
-                                            <label>
-                                                <i class="fas fa-{{ 'calendar-alt' if 'age' in feature.lower() else 'dollar-sign' if 'salary' in feature.lower() or 'income' in feature.lower() else 'clock' if 'year' in feature.lower() else 'star' if 'satisfaction' in feature.lower() or 'rating' in feature.lower() else 'map-marker-alt' if 'distance' in feature.lower() else 'graduation-cap' if 'education' in feature.lower() else 'venus-mars' if 'gender' in feature.lower() else 'heart' if 'marital' in feature.lower() else 'plane' if 'travel' in feature.lower() else 'moon' if 'overtime' in feature.lower() else 'hashtag' }} me-1"></i>
-                                                {{ feature.replace('_', ' ') }}
-                                            </label>
-                                            {% if 'age' in feature.lower() %}
-                                                <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="18" max="70" placeholder="18 – 70" required>
-                                            {% elif 'totalworking' in feature.lower() %}
-                                                <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="0" max="45" placeholder="0 – 45 years" required>
-                                            {% elif 'percentsalaryhike' in feature.lower() %}
-                                                <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="0" max="50" placeholder="0 – 50 %" required>
-                                            {% elif 'salary' in feature.lower() or 'income' in feature.lower() %}
-                                                <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="1000" max="500000" placeholder="Monthly income ₹" required>
-                                            {% elif 'year' in feature.lower() or 'experience' in feature.lower() %}
-                                                <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="0" max="50" step="0.1" placeholder="Years" required>
-                                            {% elif 'distance' in feature.lower() %}
-                                                <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="0" max="100" placeholder="km" required>
-                                            {% elif 'satisfaction' in feature.lower() or 'rating' in feature.lower() or 'balance' in feature.lower() or 'involvement' in feature.lower() %}
-                                                <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
-                                                    <option value="">Select Rating</option>
-                                                    <option value="1">1 — Very Low</option>
-                                                    <option value="2">2 — Low</option>
-                                                    <option value="3">3 — Medium</option>
-                                                    <option value="4">4 — High</option>
-                                                    <option value="5">5 — Very High</option>
-                                                </select>
-                                            {% elif 'education' in feature.lower() %}
-                                                <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
-                                                    <option value="">Select Level</option>
-                                                    <option value="1">Below College</option>
-                                                    <option value="2">College</option>
-                                                    <option value="3">Bachelor</option>
-                                                    <option value="4">Master</option>
-                                                    <option value="5">Doctor</option>
-                                                </select>
-                                            {% elif 'gender' in feature.lower() %}
-                                                <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
-                                                    <option value="">Select Gender</option>
-                                                    <option value="Female">Female</option>
-                                                    <option value="Male">Male</option>
-                                                </select>
-                                            {% elif 'marital' in feature.lower() %}
-                                                <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
-                                                    <option value="">Select Status</option>
-                                                    <option value="Single">Single</option>
-                                                    <option value="Married">Married</option>
-                                                    <option value="Divorced">Divorced</option>
-                                                </select>
-                                            {% elif 'travel' in feature.lower() %}
-                                                <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
-                                                    <option value="">Select Frequency</option>
-                                                    <option value="Non-Travel">Non-Travel</option>
-                                                    <option value="Travel_Rarely">Travel Rarely</option>
-                                                    <option value="Travel_Frequently">Travel Frequently</option>
-                                                </select>
-                                            {% elif 'overtime' in feature.lower() %}
-                                                <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
-                                                    <option value="">Select</option>
-                                                    <option value="No">No</option>
-                                                    <option value="Yes">Yes</option>
-                                                </select>
-                                            {% else %}
-                                                <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" step="0.1" placeholder="Enter value" required>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
-
                         </div>
 
+                        <!-- Dynamic Features -->
+                        {% if features %}
+                        <div class="form-section-label"><i class="fas fa-sliders-h me-1"></i>Employee Details</div>
+                        <div class="row g-3">
+                            {% for feature in features %}
+                                {% if feature not in ['Department', 'JobRole'] %}
+                                <div class="col-md-6">
+                                    <div class="field-card">
+                                        <label>
+                                            <i class="fas fa-{{ 'calendar-alt' if 'age' in feature.lower() else 'dollar-sign' if 'salary' in feature.lower() or 'income' in feature.lower() else 'clock' if 'year' in feature.lower() else 'star' if 'satisfaction' in feature.lower() or 'rating' in feature.lower() else 'map-marker-alt' if 'distance' in feature.lower() else 'graduation-cap' if 'education' in feature.lower() else 'venus-mars' if 'gender' in feature.lower() else 'heart' if 'marital' in feature.lower() else 'plane' if 'travel' in feature.lower() else 'moon' if 'overtime' in feature.lower() else 'hashtag' }} me-1"></i>
+                                            {{ feature.replace('_', ' ') }}
+                                        </label>
+                                        {% if 'age' in feature.lower() %}
+                                            <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="18" max="70" placeholder="18 – 70" required>
+                                        {% elif 'totalworking' in feature.lower() %}
+                                            <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="0" max="45" placeholder="0 – 45 yrs" required>
+                                        {% elif 'percentsalaryhike' in feature.lower() %}
+                                            <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="0" max="50" placeholder="0 – 50 %" required>
+                                        {% elif 'salary' in feature.lower() or 'income' in feature.lower() %}
+                                            <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="1000" max="500000" placeholder="Monthly ₹" required>
+                                        {% elif 'year' in feature.lower() or 'experience' in feature.lower() %}
+                                            <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="0" max="50" step="0.1" placeholder="Years" required>
+                                        {% elif 'distance' in feature.lower() %}
+                                            <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" min="0" max="100" placeholder="km" required>
+                                        {% elif 'satisfaction' in feature.lower() or 'rating' in feature.lower() or 'balance' in feature.lower() or 'involvement' in feature.lower() %}
+                                            <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
+                                                <option value="">Select Rating</option>
+                                                <option value="1">1 — Very Low</option>
+                                                <option value="2">2 — Low</option>
+                                                <option value="3">3 — Medium</option>
+                                                <option value="4">4 — High</option>
+                                                <option value="5">5 — Very High</option>
+                                            </select>
+                                        {% elif 'education' in feature.lower() %}
+                                            <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
+                                                <option value="">Select Level</option>
+                                                <option value="1">Below College</option>
+                                                <option value="2">College</option>
+                                                <option value="3">Bachelor</option>
+                                                <option value="4">Master</option>
+                                                <option value="5">Doctor</option>
+                                            </select>
+                                        {% elif 'gender' in feature.lower() %}
+                                            <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
+                                                <option value="">Select Gender</option>
+                                                <option value="Female">Female</option>
+                                                <option value="Male">Male</option>
+                                            </select>
+                                        {% elif 'marital' in feature.lower() %}
+                                            <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
+                                                <option value="">Select Status</option>
+                                                <option value="Single">Single</option>
+                                                <option value="Married">Married</option>
+                                                <option value="Divorced">Divorced</option>
+                                            </select>
+                                        {% elif 'travel' in feature.lower() %}
+                                            <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
+                                                <option value="">Select Frequency</option>
+                                                <option value="Non-Travel">Non-Travel</option>
+                                                <option value="Travel_Rarely">Travel Rarely</option>
+                                                <option value="Travel_Frequently">Travel Frequently</option>
+                                            </select>
+                                        {% elif 'overtime' in feature.lower() %}
+                                            <select class="form-select" id="{{ feature }}" name="{{ feature }}" required>
+                                                <option value="">Select</option>
+                                                <option value="No">No</option>
+                                                <option value="Yes">Yes</option>
+                                            </select>
+                                        {% else %}
+                                            <input type="number" class="form-control" id="{{ feature }}" name="{{ feature }}" step="0.1" placeholder="Enter value" required>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Submit -->
                         <div class="text-center mt-4">
-                            <button type="submit" id="predictBtn" style="background:linear-gradient(135deg,#667eea,#764ba2);border:none;border-radius:14px;padding:15px 48px;font-size:1rem;font-weight:600;color:#fff;cursor:pointer;transition:all 0.3s;font-family:'Poppins',sans-serif;box-shadow:0 8px 25px rgba(102,126,234,0.4);">
+                            <button type="submit" class="predict-btn" id="predictBtn">
                                 <i class="fas fa-brain me-2"></i>Predict Attrition Risk
                             </button>
                         </div>
                     </form>
 
-                    <div id="loading" class="text-center py-4" style="display:none;">
-                        <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;animation:pulse-glow 1.5s infinite;">
-                            <i class="fas fa-brain" style="color:#fff;font-size:1.4rem;"></i>
+                    <!-- Loading -->
+                    <div id="loading" class="text-center py-5" style="display:none;">
+                        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:pulse-glow 1.2s infinite;">
+                            <i class="fas fa-brain" style="color:#fff;font-size:1.5rem;"></i>
                         </div>
-                        <p style="color:rgba(255,255,255,0.5);font-weight:500;">AI is analyzing employee data...</p>
+                        <p style="color:rgba(255,255,255,0.5);font-weight:500;margin:0;">AI is analyzing employee data...</p>
+                        <small style="color:rgba(255,255,255,0.3);">This may take a moment</small>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- RESULT PANEL -->
+        <!-- ── SIDE PANEL ── -->
         <div class="col-lg-4">
+
+            <!-- Tips -->
             <div class="card mb-4 fade-in-up delay-2" id="tipsCard">
-                <div class="card-header"><i class="fas fa-lightbulb me-2" style="color:var(--warning2);"></i>Tips</div>
+                <div class="card-header"><i class="fas fa-lightbulb me-2" style="color:var(--warning2);"></i>How to Use</div>
                 <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-2" style="font-size:0.83rem;"><i class="fas fa-check-circle me-2" style="color:#38ef7d;"></i>Fill all fields accurately</li>
-                        <li class="mb-2" style="font-size:0.83rem;"><i class="fas fa-check-circle me-2" style="color:#38ef7d;"></i>Use actual employee data</li>
-                        <li class="mb-2" style="font-size:0.83rem;"><i class="fas fa-check-circle me-2" style="color:#38ef7d;"></i>Ratings: 1 (low) to 5 (high)</li>
-                        <li style="font-size:0.83rem;"><i class="fas fa-check-circle me-2" style="color:#38ef7d;"></i>Income is monthly in ₹</li>
-                    </ul>
+                    <div class="rec-item">
+                        <div class="rec-icon" style="background:rgba(102,126,234,0.15);color:#667eea;"><i class="fas fa-1"></i></div>
+                        <span>Select Department & Job Role first</span>
+                    </div>
+                    <div class="rec-item">
+                        <div class="rec-icon" style="background:rgba(79,172,254,0.15);color:#4facfe;"><i class="fas fa-2"></i></div>
+                        <span>Fill all employee details accurately</span>
+                    </div>
+                    <div class="rec-item">
+                        <div class="rec-icon" style="background:rgba(17,153,142,0.15);color:#38ef7d;"><i class="fas fa-3"></i></div>
+                        <span>Ratings are 1 (Very Low) to 5 (Very High)</span>
+                    </div>
+                    <div class="rec-item">
+                        <div class="rec-icon" style="background:rgba(247,151,30,0.15);color:#ffd200;"><i class="fas fa-4"></i></div>
+                        <span>Monthly income should be in ₹</span>
+                    </div>
+                    <div class="rec-item" style="border:none;">
+                        <div class="rec-icon" style="background:rgba(118,75,162,0.15);color:#764ba2;"><i class="fas fa-5"></i></div>
+                        <span>Click Predict to get AI result</span>
+                    </div>
                 </div>
             </div>
 
+            <!-- Result -->
             <div id="result" style="display:none;">
                 <div class="card result-wrapper" id="resultCard">
                     <div class="card-header" id="resultHeader">
                         <i class="fas fa-chart-pie me-2"></i>Prediction Result
                     </div>
                     <div class="card-body p-4">
+
+                        <!-- Probability Ring -->
                         <div class="text-center mb-4">
                             <div class="prob-ring" id="probRing">
-                                <span id="probPercent" style="font-size:1.5rem;font-weight:800;"></span>
-                                <small style="font-size:0.58rem;font-weight:600;opacity:0.85;letter-spacing:1px;">RISK</small>
+                                <span id="probPercent" style="font-size:1.6rem;font-weight:800;line-height:1;"></span>
+                                <small style="font-size:0.55rem;font-weight:700;letter-spacing:1.5px;opacity:0.85;">RISK</small>
                             </div>
-                            <h5 class="mt-3 mb-1" id="predictionText" style="font-size:0.95rem;"></h5>
-                            <span class="badge" id="confidenceBadge"></span>
+                            <h5 class="mt-3 mb-1" id="predictionText" style="font-size:0.95rem;font-weight:700;"></h5>
+                            <span class="badge" id="confidenceBadge" style="font-size:0.72rem;padding:5px 12px;border-radius:20px;"></span>
                         </div>
-                        <div class="progress mb-3">
-                            <div class="progress-bar" id="probBar" style="width:0%;"></div>
+
+                        <!-- Progress Bar -->
+                        <div class="mb-1 d-flex justify-content-between" style="font-size:0.72rem;color:rgba(255,255,255,0.4);">
+                            <span>Low Risk</span><span>High Risk</span>
                         </div>
+                        <div class="progress mb-4" style="height:10px;">
+                            <div class="progress-bar" id="probBar" style="width:0%;transition:width 1.2s ease;border-radius:10px;"></div>
+                        </div>
+
+                        <!-- Recommendations -->
                         <div id="recommendations"></div>
+
+                        <!-- Actions -->
                         <div class="d-flex gap-2 mt-3">
                             <button class="btn btn-primary flex-fill btn-sm" onclick="resetForm()">
                                 <i class="fas fa-redo me-1"></i>New Prediction
@@ -252,8 +440,8 @@
                     </div>
                 </div>
             </div>
-        </div>
 
+        </div>
     </div>
     {% endif %}
 </div>
@@ -261,12 +449,21 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='user.js') }}"></script>
 <script>
+function clearForm() {
+    document.getElementById('predictionForm').reset();
+    document.querySelectorAll('.is-invalid').forEach(e => e.classList.remove('is-invalid'));
+    document.querySelectorAll('.invalid-feedback').forEach(e => e.remove());
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('tipsCard').style.display = 'block';
+    document.getElementById('probBar').style.width = '0%';
+}
+
 function toggleTheme() {
     document.body.classList.toggle('light-mode');
     const icon = document.getElementById('themeIcon');
-    const isDark = !document.body.classList.contains('light-mode');
-    icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    const isLight = document.body.classList.contains('light-mode');
+    icon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
 }
 if (localStorage.getItem('theme') === 'light') {
     document.body.classList.add('light-mode');

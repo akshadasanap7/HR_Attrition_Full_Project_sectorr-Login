@@ -786,3 +786,88 @@ body.light-mode .btn-outline-secondary:hover {
 }
 
 body.light-mode ::-webkit-scrollbar-track { background: #f0f2ff; }
+
+/* ===== FINAL POLISH ===== */
+
+/* Stat card glow on hover */
+.stat-card-primary:hover { box-shadow: 0 12px 35px rgba(102,126,234,0.5) !important; }
+.stat-card-success:hover  { box-shadow: 0 12px 35px rgba(17,153,142,0.5) !important; }
+.stat-card-info:hover     { box-shadow: 0 12px 35px rgba(79,172,254,0.5) !important; }
+.stat-card-warning:hover  { box-shadow: 0 12px 35px rgba(247,151,30,0.5) !important; }
+
+/* Navbar brand icon pulse */
+.brand-icon {
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Smooth page load */
+body { animation: fadeInUp 0.4s ease-out; }
+
+/* Better table row hover */
+.table tbody tr:hover td { color: #fff !important; }
+body.light-mode .table tbody tr:hover td { color: #2d3748 !important; }
+
+/* Card header icon color */
+.card-header i { opacity: 0.9; }
+
+/* Sidebar active glow */
+.sidebar .nav-link.active {
+    box-shadow: 0 4px 20px rgba(102,126,234,0.25) !important;
+}
+
+/* Button active press */
+.btn:active { transform: translateY(1px) !important; }
+
+/* Form section label light mode */
+body.light-mode .form-section-label::after { background: rgba(102,126,234,0.15); }
+
+/* Stats pill light mode */
+body.light-mode .stats-bar .stat-pill {
+    background: #fff;
+    border-color: rgba(102,126,234,0.15);
+    color: #4a5568;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.08);
+}
+
+/* Light mode page header */
+body.light-mode .page-header h1 { color: #1a1a2e !important; }
+body.light-mode .page-header p  { color: #718096 !important; }
+
+/* Light mode section header */
+body.light-mode .section-header h2 { color: #1a1a2e !important; }
+body.light-mode .section-header p  { color: #718096 !important; }
+
+/* Light mode stat cards keep gradient */
+body.light-mode .stat-card { color: #fff !important; }
+body.light-mode .stat-card .stat-label { color: rgba(255,255,255,0.8) !important; }
+body.light-mode .stat-card .stat-value { color: #fff !important; }
+
+/* Light mode table */
+body.light-mode .table tbody tr:hover { background: rgba(102,126,234,0.06) !important; }
+body.light-mode .table tbody tr:hover td { color: #2d3748 !important; }
+
+/* Light mode card body text */
+body.light-mode .card-body { color: #2d3748; }
+body.light-mode .card-body span[style*="rgba(255,255,255"] { color: #718096 !important; }
+
+/* Smooth theme transition */
+body, .card, .navbar, .sidebar, .page-header, .controls-card {
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Upload zone light mode */
+body.light-mode .upload-zone h5 { color: #2d3748 !important; }
+body.light-mode .upload-zone p  { color: #718096 !important; }
+
+/* Empty state light mode */
+body.light-mode .empty-state h4 { color: #718096 !important; }
+body.light-mode .empty-state p  { color: #a0aec0 !important; }
+
+/* Loading spinner color */
+body.light-mode .spinner-border { color: var(--primary) !important; }
+
+/* Rec item light mode */
+body.light-mode .rec-item { color: #4a5568 !important; border-bottom-color: #f0f2ff !important; }
+
+/* Chart card light mode */
+body.light-mode .chart-card .chart-header { color: #2d3748 !important; }

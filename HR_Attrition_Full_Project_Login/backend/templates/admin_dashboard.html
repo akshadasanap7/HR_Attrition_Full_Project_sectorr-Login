@@ -82,6 +82,16 @@
                         <i class="fas fa-magic"></i>Prediction Tool
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('manager_dashboard') }}">
+                        <i class="fas fa-users-cog"></i>Manager View
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('hr_dashboard') }}">
+                        <i class="fas fa-clipboard-list"></i>HR Lead View
+                    </a>
+                </li>
             </ul>
         </nav>
 
@@ -168,6 +178,54 @@
                     </div>
                 </div>
 
+                <!-- Row 2 stat cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-3 col-md-6 fade-in-up delay-1">
+                        <div class="card stat-card" style="background:linear-gradient(135deg,#eb3349,#f45c43);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">Total Predictions</div>
+                                    <div class="stat-value mt-1">{{ total_predictions }}</div>
+                                </div>
+                                <div class="stat-icon"><i class="fas fa-brain"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 fade-in-up delay-2">
+                        <div class="card stat-card" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">Roles</div>
+                                    <div class="stat-value mt-1">4</div>
+                                </div>
+                                <div class="stat-icon"><i class="fas fa-id-badge"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 fade-in-up delay-3">
+                        <div class="card stat-card" style="background:linear-gradient(135deg,#0f3460,#4facfe);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">Algorithm</div>
+                                    <div class="stat-value mt-1" style="font-size:0.9rem;">Random Forest</div>
+                                </div>
+                                <div class="stat-icon"><i class="fas fa-tree"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 fade-in-up delay-4">
+                        <div class="card stat-card" style="background:linear-gradient(135deg,#302b63,#24243e);border:1px solid rgba(102,126,234,0.3) !important;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="stat-label">System</div>
+                                    <div class="stat-value mt-1" style="font-size:1rem;">● Online</div>
+                                </div>
+                                <div class="stat-icon"><i class="fas fa-server"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Quick Actions + System Info -->
                 <div class="row g-4">
                     <div class="col-md-6 fade-in-up delay-2">
@@ -187,6 +245,12 @@
                                 </a>
                                 <a href="{{ url_for('user_dashboard') }}" class="btn btn-warning w-100">
                                     <i class="fas fa-magic me-2"></i>Prediction Tool
+                                </a>
+                                <a href="{{ url_for('manager_dashboard') }}" class="btn w-100" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#1a1a2e;font-weight:600;">
+                                    <i class="fas fa-users-cog me-2"></i>Manager Dashboard
+                                </a>
+                                <a href="{{ url_for('hr_dashboard') }}" class="btn w-100" style="background:linear-gradient(135deg,#11998e,#38ef7d);color:#1a1a2e;font-weight:600;">
+                                    <i class="fas fa-clipboard-list me-2"></i>HR Lead Dashboard
                                 </a>
                             </div>
                         </div>
