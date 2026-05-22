@@ -5,21 +5,19 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score
 import pickle
 from werkzeug.utils import secure_filename
-import json
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'hr_attrition_advanced_2024'
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-# Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Global variables for model data
+# Global model variables
 model_data = None
 model = None
 feature_names = []
@@ -27,15 +25,28 @@ label_encoders = {}
 model_accuracy = None
 training_data = None
 
-# Demo users with roles
+# Prediction history — stored in memory (list of dicts)
+prediction_history = []
+
+# Users with 4 roles
 USERS = {
-    'admin': {'password': 'admin123', 'role': 'Admin'},
-    'user': {'password': 'user123', 'role': 'User'},
-    'manager': {'password': 'manager123', 'role': 'User'},
-    'hr_lead': {'password': 'hr123', 'role': 'User'}
+    'admin':    {'password': 'admin123',   'role': 'Admin',   'name': 'Admin User',      'dept': 'IT'},
+    'manager':  {'password': 'manager123', 'role': 'Manager', 'name': 'Rahul Sharma',    'dept': 'Sales'},
+    'hr_lead':  {'password': 'hr123',      'role': 'HR Lead', 'name': 'Priya Desai',     'dept': 'Human Resources'},
+    'user':     {'password': 'user123',    'role': 'User',    'name': 'Akash Patil',     'dept': 'Research & Development'},
 }
 
-# Predefined dropdown options
+# Team data for Manager dashboard
+TEAM_DATA = {
+    'manager': [
+        {'name': 'Amit Kumar',    'role': 'Sales Executive',      'dept': 'Sales', 'years': 3,  'risk': 'High'},
+        {'name': 'Sneha Joshi',   'role': 'Sales Representative', 'dept': 'Sales', 'years': 1,  'risk': 'Medium'},
+        {'name': 'Ravi Patil',    'role': 'Sales Executive',      'dept': 'Sales', 'years': 5,  'risk': 'Low'},
+        {'name': 'Pooja Mehta',   'role': 'Manager',              'dept': 'Sales', 'years': 7,  'risk': 'Low'},
+        {'name': 'Kiran Rao',     'role': 'Sales Representative', 'dept': 'Sales', 'years': 2,  'risk': 'High'},
+    ]
+}
+
 DROPDOWN_OPTIONS = {
     'Department': ['Sales', 'Research & Development', 'Human Resources'],
     'JobRole': [
@@ -49,7 +60,6 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() == 'xlsx'
 
 def load_model():
-    """Load the trained model if it exists"""
     global model_data, model, feature_names, label_encoders, model_accuracy, training_data
     try:
         with open('model.pkl', 'rb') as f:
@@ -66,259 +76,248 @@ def load_model():
         return False
 
 def process_excel_and_train(file_path):
-    """Process Excel file and train the model"""
     global model_data, model, feature_names, label_encoders, model_accuracy, training_data
-    
     try:
-        # Load Excel file
         df = pd.read_excel(file_path)
-        print(f"Data loaded: {df.shape}")
-        
-        # Store original data for analytics
         original_df = df.copy()
-        
-        # Handle missing values
+
         numeric_columns = df.select_dtypes(include=[np.number]).columns
         for col in numeric_columns:
             df[col] = df[col].fillna(df[col].median())
-        
+
         categorical_columns = df.select_dtypes(include=['object']).columns
         for col in categorical_columns:
             df[col] = df[col].fillna(df[col].mode()[0] if not df[col].mode().empty else 'Unknown')
-        
-        # Find target column
+
         target_col = None
-        possible_targets = ['Attrition', 'attrition', 'ATTRITION', 'Attrition_Flag', 'Left']
-        
-        for col in possible_targets:
+        for col in ['Attrition', 'attrition', 'ATTRITION', 'Attrition_Flag', 'Left']:
             if col in df.columns:
                 target_col = col
                 break
-        
+
         if target_col is None:
-            return False, "Target column 'Attrition' not found in the dataset"
-        
-        # Convert target to binary
+            return False, "Target column 'Attrition' not found"
+
         if df[target_col].dtype == 'object':
             df[target_col] = df[target_col].map({'Yes': 1, 'No': 0, 'yes': 1, 'no': 0, 'YES': 1, 'NO': 0})
-        
-        # Separate features and target
+
         y = df[target_col]
         X = df.drop(columns=[target_col])
-        
-        # Remove ID columns
-        id_columns = [col for col in X.columns if 'id' in col.lower() or 'name' in col.lower() or 'employee' in col.lower()]
-        X = X.drop(columns=id_columns, errors='ignore')
-        
-        # Encode categorical variables with consistent mapping
+
+        id_cols = [c for c in X.columns if 'id' in c.lower() or 'name' in c.lower() or 'employee' in c.lower()]
+        X = X.drop(columns=id_cols, errors='ignore')
+
         new_label_encoders = {}
-        categorical_columns = X.select_dtypes(include=['object']).columns
-        
-        for col in categorical_columns:
+        for col in X.select_dtypes(include=['object']).columns:
             le = LabelEncoder()
-            
-            # Use predefined options if available
             if col in DROPDOWN_OPTIONS:
-                # Fit on predefined options to ensure consistency
                 le.fit(DROPDOWN_OPTIONS[col])
-                # Transform actual data, handling unseen values
                 X[col] = X[col].apply(lambda x: x if x in DROPDOWN_OPTIONS[col] else DROPDOWN_OPTIONS[col][0])
                 X[col] = le.transform(X[col])
             else:
                 X[col] = le.fit_transform(X[col].astype(str))
-            
             new_label_encoders[col] = le
-        
-        # Split data
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-        
-        # Train model
+
         new_model = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10)
         new_model.fit(X_train, y_train)
-        
-        # Calculate accuracy
-        y_pred = new_model.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        
-        # Update global variables
+
+        accuracy = accuracy_score(y_test, new_model.predict(X_test))
+
         model = new_model
         feature_names = list(X.columns)
         label_encoders = new_label_encoders
         model_accuracy = accuracy
-        training_data = original_df  # Store for analytics
-        
-        # Save model with training data
+        training_data = original_df
+
         model_data = {
-            'model': model,
-            'feature_names': feature_names,
-            'label_encoders': label_encoders,
-            'accuracy': accuracy,
+            'model': model, 'feature_names': feature_names,
+            'label_encoders': label_encoders, 'accuracy': accuracy,
             'training_data': training_data
         }
-        
+
         with open('model.pkl', 'wb') as f:
             pickle.dump(model_data, f)
-        
+
         return True, f"Model trained successfully! Accuracy: {accuracy:.3f}"
-        
+
     except Exception as e:
-        return False, f"Error training model: {str(e)}"
+        return False, f"Error: {str(e)}"
+
+# ─── ROUTES ───────────────────────────────────────────────
 
 @app.route('/')
 def index():
-    if 'username' in session:
-        if session['role'] == 'Admin':
-            return redirect(url_for('admin_dashboard'))
-        else:
-            return redirect(url_for('user_dashboard'))
-    return redirect(url_for('login'))
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    role = session['role']
+    if role == 'Admin':
+        return redirect(url_for('admin_dashboard'))
+    elif role == 'Manager':
+        return redirect(url_for('manager_dashboard'))
+    elif role == 'HR Lead':
+        return redirect(url_for('hr_dashboard'))
+    else:
+        return redirect(url_for('user_dashboard'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
         if username in USERS and USERS[username]['password'] == password:
             session['username'] = username
             session['role'] = USERS[username]['role']
-            flash(f'Welcome {username}!', 'success')
-            
-            if session['role'] == 'Admin':
-                return redirect(url_for('admin_dashboard'))
-            else:
-                return redirect(url_for('user_dashboard'))
+            session['name'] = USERS[username]['name']
+            session['dept'] = USERS[username]['dept']
+            flash(f'Welcome, {USERS[username]["name"]}!', 'success')
+            return redirect(url_for('index'))
         else:
-            flash('Invalid credentials', 'error')
-    
+            flash('Invalid username or password.', 'error')
     return render_template('login.html')
 
 @app.route('/admin/dashboard')
 def admin_dashboard():
     if 'username' not in session or session['role'] != 'Admin':
-        flash('Access denied. Admin privileges required.', 'error')
+        flash('Access denied.', 'error')
         return redirect(url_for('login'))
-    
-    # Get list of users
-    users_list = [{'username': k, 'role': v['role']} for k, v in USERS.items()]
-    
-    return render_template('admin_dashboard.html', 
-                         username=session['username'],
-                         users=users_list,
-                         model_accuracy=model_accuracy,
-                         model_exists=model is not None,
-                         feature_count=len(feature_names) if feature_names else 0)
+    users_list = [{'username': k, 'role': v['role'], 'name': v['name'], 'dept': v['dept']} for k, v in USERS.items()]
+    return render_template('admin_dashboard.html',
+        username=session['username'], name=session['name'],
+        users=users_list, model_accuracy=model_accuracy,
+        model_exists=model is not None,
+        feature_count=len(feature_names) if feature_names else 0,
+        total_predictions=len(prediction_history))
 
 @app.route('/user/dashboard')
 def user_dashboard():
     if 'username' not in session:
-        flash('Please login to access the dashboard.', 'error')
         return redirect(url_for('login'))
-    
     if session['role'] == 'Admin':
         return redirect(url_for('admin_dashboard'))
-    
-    if not model:
-        flash('No trained model available. Please contact admin.', 'warning')
-    
-    return render_template('user_dashboard.html', 
-                         username=session['username'],
-                         features=feature_names,
-                         model_exists=model is not None,
-                         dropdown_options=DROPDOWN_OPTIONS)
+    if session['role'] == 'Manager':
+        return redirect(url_for('manager_dashboard'))
+    if session['role'] == 'HR Lead':
+        return redirect(url_for('hr_dashboard'))
+    return render_template('user_dashboard.html',
+        username=session['username'], name=session['name'],
+        features=feature_names, model_exists=model is not None,
+        dropdown_options=DROPDOWN_OPTIONS)
+
+@app.route('/manager/dashboard')
+def manager_dashboard():
+    if 'username' not in session or session['role'] != 'Manager':
+        flash('Access denied.', 'error')
+        return redirect(url_for('login'))
+    team = TEAM_DATA.get(session['username'], [])
+    high_risk   = sum(1 for m in team if m['risk'] == 'High')
+    medium_risk = sum(1 for m in team if m['risk'] == 'Medium')
+    low_risk    = sum(1 for m in team if m['risk'] == 'Low')
+    # Manager sees only their team's predictions
+    my_predictions = [p for p in prediction_history if p.get('predicted_by') == session['username']]
+    return render_template('manager_dashboard.html',
+        username=session['username'], name=session['name'], dept=session['dept'],
+        team=team, total_team=len(team),
+        high_risk=high_risk, medium_risk=medium_risk, low_risk=low_risk,
+        features=feature_names, model_exists=model is not None,
+        dropdown_options=DROPDOWN_OPTIONS,
+        my_predictions=my_predictions)
+
+@app.route('/hr/dashboard')
+def hr_dashboard():
+    if 'username' not in session or session['role'] != 'HR Lead':
+        flash('Access denied.', 'error')
+        return redirect(url_for('login'))
+    total = len(prediction_history)
+    leave_count = sum(1 for p in prediction_history if p.get('result') == 'leave')
+    stay_count  = sum(1 for p in prediction_history if p.get('result') == 'stay')
+    high_conf   = sum(1 for p in prediction_history if p.get('confidence') == 'High')
+    return render_template('hr_dashboard.html',
+        username=session['username'], name=session['name'], dept=session['dept'],
+        prediction_history=prediction_history,
+        total=total, leave_count=leave_count,
+        stay_count=stay_count, high_conf=high_conf,
+        model_exists=model is not None,
+        model_accuracy=model_accuracy)
 
 @app.route('/admin/reports')
 def admin_reports():
     if 'username' not in session or session['role'] != 'Admin':
-        flash('Access denied. Admin privileges required.', 'error')
+        flash('Access denied.', 'error')
         return redirect(url_for('login'))
-    
     if training_data is None:
-        flash('No training data available. Please upload and train a model first.', 'warning')
+        flash('No training data. Upload a dataset first.', 'warning')
         return redirect(url_for('admin_dashboard'))
-    
-    # Get available columns for analysis
-    available_columns = list(training_data.columns)
-    
     return render_template('admin_reports.html',
-                         username=session['username'],
-                         available_columns=available_columns)
+        username=session['username'], name=session['name'],
+        available_columns=list(training_data.columns))
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'username' not in session or session['role'] != 'Admin':
         return jsonify({'success': False, 'message': 'Access denied'}), 403
-    
     if 'file' not in request.files:
         return jsonify({'success': False, 'message': 'No file selected'}), 400
-    
     file = request.files['file']
     if file.filename == '':
         return jsonify({'success': False, 'message': 'No file selected'}), 400
-    
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{timestamp}_{filename}"
+        filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
-        
-        # Train model with uploaded file
         success, message = process_excel_and_train(file_path)
-        
         if success:
             return jsonify({'success': True, 'message': message, 'accuracy': model_accuracy})
-        else:
-            return jsonify({'success': False, 'message': message}), 400
-    
-    return jsonify({'success': False, 'message': 'Invalid file format. Please upload .xlsx files only'}), 400
+        return jsonify({'success': False, 'message': message}), 400
+    return jsonify({'success': False, 'message': 'Only .xlsx files allowed'}), 400
 
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'username' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
-    
     if model is None:
         return jsonify({'error': 'No trained model available'}), 500
-    
     try:
         data = request.get_json()
-        
-        # Create feature vector
         feature_vector = []
         for feature in feature_names:
-            if feature in data:
-                value = data[feature]
-                
-                # Handle categorical encoding
-                if feature in label_encoders:
-                    try:
-                        encoded_value = label_encoders[feature].transform([str(value)])[0]
-                        feature_vector.append(encoded_value)
-                    except ValueError:
-                        # If value not seen during training, use first class
-                        encoded_value = 0
-                        feature_vector.append(encoded_value)
-                else:
-                    # Numeric feature
-                    feature_vector.append(float(value))
+            value = data.get(feature, 0)
+            if feature in label_encoders:
+                try:
+                    feature_vector.append(int(label_encoders[feature].transform([str(value)])[0]))
+                except ValueError:
+                    feature_vector.append(0)
             else:
-                # Missing feature, use default value
-                feature_vector.append(0)
-        
-        # Make prediction
+                feature_vector.append(float(value))
+
         features = np.array([feature_vector])
         prediction = model.predict(features)[0]
         probability = model.predict_proba(features)[0]
-        
-        result = {
+        result_label = 'leave' if prediction == 1 else 'stay'
+        confidence = 'High' if max(probability) > 0.7 else 'Medium' if max(probability) > 0.6 else 'Low'
+
+        # Save to prediction history
+        record = {
+            'id': len(prediction_history) + 1,
+            'predicted_by': session['username'],
+            'role': session['role'],
+            'name': session.get('name', session['username']),
+            'dept': data.get('Department', 'N/A'),
+            'job_role': data.get('JobRole', 'N/A'),
+            'result': result_label,
+            'probability': round(float(probability[1]) * 100, 1),
+            'confidence': confidence,
+            'timestamp': datetime.now().strftime('%d %b %Y, %I:%M %p')
+        }
+        prediction_history.append(record)
+
+        return jsonify({
             'prediction': 'Employee may leave' if prediction == 1 else 'Employee likely to stay',
             'probability': float(probability[1]),
-            'confidence': 'High' if max(probability) > 0.7 else 'Medium' if max(probability) > 0.6 else 'Low'
-        }
-        
-        return jsonify(result)
-    
+            'confidence': confidence
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -326,119 +325,48 @@ def predict():
 def get_chart_data():
     if 'username' not in session or session['role'] != 'Admin':
         return jsonify({'error': 'Access denied'}), 403
-    
     if training_data is None:
         return jsonify({'error': 'No training data available'}), 404
-    
     try:
-        request_data = request.get_json()
-        chart_type = request_data.get('chart_type', 'bar')
-        x_column = request_data.get('x_column')
-        y_column = request_data.get('y_column', 'Attrition')
-        
+        req = request.get_json()
+        chart_type = req.get('chart_type', 'bar')
+        x_column   = req.get('x_column')
+        y_column   = req.get('y_column', 'Attrition')
         df = training_data.copy()
-        
+
         if x_column not in df.columns:
             return jsonify({'error': f'Column {x_column} not found'}), 400
-        
-        # Prepare data based on chart type
+
         if chart_type == 'pie':
-            # For pie charts, show distribution of x_column
             data = df[x_column].value_counts().to_dict()
-            labels = list(data.keys())
-            values = list(data.values())
-            
             chart_data = {
-                'labels': labels,
-                'datasets': [{
-                    'data': values,
-                    'backgroundColor': [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                        '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
-                    ]
-                }]
+                'labels': list(data.keys()),
+                'datasets': [{'data': list(data.values()),
+                    'backgroundColor': ['#667eea','#764ba2','#11998e','#38ef7d','#4facfe','#f7971e','#eb3349','#ffd200']}]
             }
-        
         elif chart_type in ['bar', 'line']:
-            # Group by x_column and calculate attrition rate
             if y_column == 'Attrition':
-                # Convert Attrition to numeric if it's not
                 if df[y_column].dtype == 'object':
-                    df[y_column] = df[y_column].map({'Yes': 1, 'No': 0, 'yes': 1, 'no': 0, 'YES': 1, 'NO': 0})
-                
-                grouped = df.groupby(x_column)[y_column].agg(['count', 'sum']).reset_index()
+                    df[y_column] = df[y_column].map({'Yes':1,'No':0,'yes':1,'no':0})
+                grouped = df.groupby(x_column)[y_column].agg(['count','sum']).reset_index()
                 grouped['attrition_rate'] = (grouped['sum'] / grouped['count'] * 100).round(2)
-                
-                labels = grouped[x_column].tolist()
-                values = grouped['attrition_rate'].tolist()
-                counts = grouped['count'].tolist()
-                
                 chart_data = {
-                    'labels': labels,
-                    'datasets': [{
-                        'label': 'Attrition Rate (%)',
-                        'data': values,
-                        'backgroundColor': '#36A2EB' if chart_type == 'bar' else 'transparent',
-                        'borderColor': '#36A2EB',
-                        'borderWidth': 2,
-                        'fill': False
-                    }, {
-                        'label': 'Employee Count',
-                        'data': counts,
-                        'backgroundColor': '#FF6384' if chart_type == 'bar' else 'transparent',
-                        'borderColor': '#FF6384',
-                        'borderWidth': 2,
-                        'fill': False,
-                        'yAxisID': 'y1'
-                    }]
+                    'labels': grouped[x_column].tolist(),
+                    'datasets': [
+                        {'label': 'Attrition Rate (%)', 'data': grouped['attrition_rate'].tolist(),
+                         'backgroundColor': '#667eea', 'borderColor': '#667eea', 'borderWidth': 2, 'fill': False},
+                        {'label': 'Employee Count', 'data': grouped['count'].tolist(),
+                         'backgroundColor': '#eb3349', 'borderColor': '#eb3349', 'borderWidth': 2, 'fill': False, 'yAxisID': 'y1'}
+                    ]
                 }
             else:
-                # For other numeric columns
-                if df[y_column].dtype in ['object']:
-                    # Categorical y-column
-                    crosstab = pd.crosstab(df[x_column], df[y_column])
-                    labels = crosstab.index.tolist()
-                    datasets = []
-                    colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
-                    
-                    for i, col in enumerate(crosstab.columns):
-                        datasets.append({
-                            'label': str(col),
-                            'data': crosstab[col].tolist(),
-                            'backgroundColor': colors[i % len(colors)] if chart_type == 'bar' else 'transparent',
-                            'borderColor': colors[i % len(colors)],
-                            'borderWidth': 2,
-                            'fill': False
-                        })
-                    
-                    chart_data = {
-                        'labels': labels,
-                        'datasets': datasets
-                    }
-                else:
-                    # Numeric y-column
-                    grouped = df.groupby(x_column)[y_column].mean().reset_index()
-                    labels = grouped[x_column].tolist()
-                    values = grouped[y_column].round(2).tolist()
-                    
-                    chart_data = {
-                        'labels': labels,
-                        'datasets': [{
-                            'label': f'Average {y_column}',
-                            'data': values,
-                            'backgroundColor': '#36A2EB' if chart_type == 'bar' else 'transparent',
-                            'borderColor': '#36A2EB',
-                            'borderWidth': 2,
-                            'fill': False
-                        }]
-                    }
-        
-        return jsonify({
-            'success': True,
-            'chart_data': chart_data,
-            'chart_type': chart_type
-        })
-        
+                grouped = df.groupby(x_column)[y_column].mean().reset_index()
+                chart_data = {
+                    'labels': grouped[x_column].tolist(),
+                    'datasets': [{'label': f'Avg {y_column}', 'data': grouped[y_column].round(2).tolist(),
+                        'backgroundColor': '#667eea', 'borderColor': '#667eea', 'borderWidth': 2, 'fill': False}]
+                }
+        return jsonify({'success': True, 'chart_data': chart_data, 'chart_type': chart_type})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -446,24 +374,18 @@ def get_chart_data():
 def model_info():
     if 'username' not in session or session['role'] != 'Admin':
         return jsonify({'error': 'Access denied'}), 403
-    
     if model is None:
         return jsonify({'error': 'No model available'}), 404
-    
-    return jsonify({
-        'accuracy': model_accuracy,
-        'features': feature_names,
-        'feature_count': len(feature_names)
-    })
+    return jsonify({'accuracy': model_accuracy, 'features': feature_names, 'feature_count': len(feature_names)})
 
 @app.route('/logout')
 def logout():
-    username = session.get('username', 'User')
+    name = session.get('name', 'User')
     session.clear()
-    flash(f'Goodbye {username}!', 'info')
+    flash(f'Goodbye, {name}!', 'info')
     return redirect(url_for('login'))
 
-load_model()  # Load on startup for gunicorn too
+load_model()
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)

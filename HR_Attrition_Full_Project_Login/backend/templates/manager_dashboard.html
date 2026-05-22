@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard — HR Attrition AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">
+            <div class="brand-icon"><i class="fas fa-brain"></i></div>
+            HR Attrition AI
+        </a>
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-none d-md-flex align-items-center gap-2">
+                <div style="width:32px;height:32px;background:linear-gradient(135deg,#f7971e,#ffd200);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:#fff;">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div>
+                    <div style="color:#fff;font-size:0.85rem;font-weight:600;line-height:1.2;">{{ name }}</div>
+                    <div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">Manager — {{ dept }}</div>
+                </div>
+            </div>
+            <button onclick="toggleTheme()" id="themeBtn" title="Toggle Theme" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.3s;">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </button>
+            <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width:52px;height:52px;background:linear-gradient(135deg,#f7971e,#ffd200);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#fff;box-shadow:0 8px 25px rgba(247,151,30,0.4);">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <div>
+                <h1>Manager Dashboard</h1>
+                <p>Monitor your team's attrition risk and run predictions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-4 pb-5">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }} alert-dismissible fade show fade-in-up mb-4">
+                <i class="fas fa-info-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <!-- STAT CARDS -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6 fade-in-up delay-1">
+            <div class="card stat-card stat-card-primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Total Team</div>
+                        <div class="stat-value mt-1">{{ total_team }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 fade-in-up delay-2">
+            <div class="card stat-card" style="background:linear-gradient(135deg,#eb3349,#f45c43);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">High Risk</div>
+                        <div class="stat-value mt-1">{{ high_risk }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 fade-in-up delay-3">
+            <div class="card stat-card stat-card-warning">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Medium Risk</div>
+                        <div class="stat-value mt-1">{{ medium_risk }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-minus-circle"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 fade-in-up delay-4">
+            <div class="card stat-card stat-card-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Low Risk</div>
+                        <div class="stat-value mt-1">{{ low_risk }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- TEAM TABLE -->
+        <div class="col-lg-7 fade-in-up delay-2">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-users me-2" style="color:var(--primary);"></i>My Team — {{ dept }}
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Role</th>
+                                    <th>Years</th>
+                                    <th>Risk Level</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in team %}
+                                <tr class="fade-in-up" style="animation-delay:{{ loop.index * 0.06 }}s;">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.8rem;font-weight:700;flex-shrink:0;">
+                                                {{ member.name[0] }}
+                                            </div>
+                                            <span style="font-size:0.88rem;font-weight:600;">{{ member.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td style="font-size:0.83rem;color:rgba(255,255,255,0.6);">{{ member.role }}</td>
+                                    <td style="font-size:0.85rem;">{{ member.years }} yrs</td>
+                                    <td>
+                                        <span class="badge" style="
+                                            {% if member.risk == 'High' %}background:linear-gradient(135deg,#eb3349,#f45c43);
+                                            {% elif member.risk == 'Medium' %}background:linear-gradient(135deg,#f7971e,#ffd200);color:#1a1a2e;
+                                            {% else %}background:linear-gradient(135deg,#11998e,#38ef7d);color:#1a1a2e;{% endif %}
+                                            padding:5px 12px;border-radius:20px;font-size:0.72rem;">
+                                            {{ member.risk }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" onclick="openPredictModal('{{ member.name }}','{{ member.role }}')">
+                                            <i class="fas fa-magic me-1"></i>Predict
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PREDICTION PANEL -->
+        <div class="col-lg-5 fade-in-up delay-3">
+
+            <!-- My Predictions History -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-history me-2" style="color:var(--warning);"></i>My Recent Predictions
+                    <span class="badge bg-primary ms-2">{{ my_predictions|length }}</span>
+                </div>
+                <div class="card-body p-0" style="max-height:220px;overflow-y:auto;">
+                    {% if my_predictions %}
+                        {% for p in my_predictions|reverse %}
+                        <div class="d-flex justify-content-between align-items-center px-3 py-2" style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <div style="font-size:0.83rem;font-weight:600;">{{ p.job_role }}</div>
+                                <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);">{{ p.timestamp }}</div>
+                            </div>
+                            <span class="badge" style="{% if p.result == 'leave' %}background:linear-gradient(135deg,#eb3349,#f45c43);{% else %}background:linear-gradient(135deg,#11998e,#38ef7d);color:#1a1a2e;{% endif %}font-size:0.7rem;">
+                                {{ '⚠ Leave' if p.result == 'leave' else '✓ Stay' }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4" style="color:rgba(255,255,255,0.3);font-size:0.85rem;">
+                            <i class="fas fa-clock d-block mb-2" style="font-size:1.5rem;"></i>No predictions yet
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Predict -->
+            {% if model_exists %}
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-magic me-2" style="color:var(--primary);"></i>Quick Predict
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary w-100">
+                        <i class="fas fa-brain me-2"></i>Open Full Prediction Tool
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-exclamation-triangle" style="font-size:2rem;color:#ffd200;"></i>
+                    <p class="mt-2 mb-0" style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Model not trained yet. Contact Admin.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- RISK SUMMARY CHART -->
+    <div class="row g-4 mt-2">
+        <div class="col-lg-6 fade-in-up delay-2">
+            <div class="card">
+                <div class="card-header"><i class="fas fa-chart-pie me-2" style="color:var(--info);"></i>Team Risk Distribution</div>
+                <div class="card-body">
+                    <canvas id="riskChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 fade-in-up delay-3">
+            <div class="card">
+                <div class="card-header"><i class="fas fa-lightbulb me-2" style="color:var(--warning2);"></i>Manager Actions Guide</div>
+                <div class="card-body">
+                    <div class="rec-item">
+                        <div class="rec-icon" style="background:rgba(235,51,73,0.15);color:#eb3349;"><i class="fas fa-fire"></i></div>
+                        <div><strong style="font-size:0.85rem;">High Risk</strong><br><span style="font-size:0.78rem;color:rgba(255,255,255,0.5);">Schedule 1-on-1 immediately, discuss concerns & career path</span></div>
+                    </div>
+                    <div class="rec-item">
+                        <div class="rec-icon" style="background:rgba(247,151,30,0.15);color:#f7971e;"><i class="fas fa-exclamation"></i></div>
+                        <div><strong style="font-size:0.85rem;">Medium Risk</strong><br><span style="font-size:0.78rem;color:rgba(255,255,255,0.5);">Monthly check-ins, explore growth opportunities</span></div>
+                    </div>
+                    <div class="rec-item">
+                        <div class="rec-icon" style="background:rgba(17,153,142,0.15);color:#38ef7d;"><i class="fas fa-check"></i></div>
+                        <div><strong style="font-size:0.85rem;">Low Risk</strong><br><span style="font-size:0.78rem;color:rgba(255,255,255,0.5);">Maintain engagement, recognize performance regularly</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Risk Chart
+Chart.defaults.color = 'rgba(255,255,255,0.5)';
+new Chart(document.getElementById('riskChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+        datasets: [{
+            data: [{{ high_risk }}, {{ medium_risk }}, {{ low_risk }}],
+            backgroundColor: ['#eb3349', '#f7971e', '#11998e'],
+            borderColor: '#12122a',
+            borderWidth: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Poppins', size: 12 }, padding: 16, color: 'rgba(255,255,255,0.6)' } }
+        }
+    }
+});
+
+function openPredictModal(name, role) {
+    window.location.href = "{{ url_for('user_dashboard') }}";
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    const icon = document.getElementById('themeIcon');
+    const isLight = document.body.classList.contains('light-mode');
+    icon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+    document.getElementById('themeIcon').className = 'fas fa-sun';
+}
+</script>
+</body>
+</html>
