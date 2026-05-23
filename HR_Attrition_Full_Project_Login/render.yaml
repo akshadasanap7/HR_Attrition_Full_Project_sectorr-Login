@@ -2,7 +2,7 @@ services:
   - type: web
     name: hr-attrition-ai
     runtime: python
-    rootDir: backend
+    rootDir: HR_Attrition_Full_Project_Login/backend
     buildCommand: pip install -r ../requirements.txt
     startCommand: gunicorn app:app
     envVars:
