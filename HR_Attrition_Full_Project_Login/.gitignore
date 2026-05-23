@@ -7,5 +7,6 @@ env/
 .venv/
 uploads/
 *.docx
+*.pkl
 .DS_Store
 Thumbs.db
